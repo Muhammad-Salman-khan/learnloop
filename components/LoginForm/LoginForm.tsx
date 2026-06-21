@@ -61,7 +61,7 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
-      remember: true,
+      remember: true as boolean,
     } satisfies LoginFormValues,
     validators: {
       onChange: loginFormSchema,

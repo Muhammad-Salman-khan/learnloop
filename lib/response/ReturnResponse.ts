@@ -29,7 +29,7 @@ export type StatusCode =
   | 422
   | 500;
 
-type ApiResponse<T> = {
+export type ApiResponse<T> = {
   status: number;
   success: boolean;
   message: string;

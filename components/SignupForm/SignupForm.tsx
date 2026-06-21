@@ -89,7 +89,7 @@ export function SignupForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      terms: false,
+      terms: false as boolean,
     } satisfies SignupFormValues,
     validators: {
       onChange: signupFormSchema,

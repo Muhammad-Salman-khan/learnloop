@@ -22,7 +22,16 @@ const CloudinayUploadImage = async (thumbnail: File | null) => {
     }
     const bytes = await file?.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await new Promise<CloudinaryUploadType>((req, res) => {});
+    await new Promise<CloudinaryUploadType>((resolve, reject) => {
+      const uploadStreams = cloudinary.uploader.upload_stream(
+        { folder: "Lms-students" },
+        (error, result) => {
+          if (error || !result) reject(error);
+          else resolve(result as unknown as CloudinaryUploadType);
+        },
+      );
+      uploadStreams.end(buffer);
+    });
   } catch (error: any) {
     console.error(error);
   }

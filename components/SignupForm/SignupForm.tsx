@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react/no-children-prop -- TanStack Form requires render-prop `children` on <form.Field> and <form.Subscribe>. */
 
 import * as React from "react";
 import Link from "next/link";
@@ -90,9 +91,6 @@ export function SignupForm() {
       confirmPassword: "",
       terms: false,
     } as SignupInput & { terms: boolean },
-    validators: {
-      onChange: signupSchema,
-    },
     onSubmit: async ({ value }) => {
       setFormError(null);
       try {
@@ -157,6 +155,16 @@ export function SignupForm() {
           <FieldGroup>
             <form.Field
               name="name"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = signupSchema.shape.name.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues
+                        .map((issue) => issue.message)
+                        .filter((m): m is string => Boolean(m));
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -187,6 +195,16 @@ export function SignupForm() {
 
             <form.Field
               name="email"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = signupSchema.shape.email.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues
+                        .map((issue) => issue.message)
+                        .filter((m): m is string => Boolean(m));
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -218,6 +236,16 @@ export function SignupForm() {
 
             <form.Field
               name="password"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = signupSchema.shape.password.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues
+                        .map((issue) => issue.message)
+                        .filter((m): m is string => Boolean(m));
+                },
+              }}
               children={(field) => {
                 const value = field.state.value;
                 const isInvalid =
@@ -302,6 +330,18 @@ export function SignupForm() {
 
             <form.Field
               name="confirmPassword"
+              validators={{
+                onChangeListenTo: ["password"],
+                onChange: ({ value, fieldApi }) => {
+                  if (!value) {
+                    return undefined;
+                  }
+                  if (value !== fieldApi.form.getFieldValue("password")) {
+                    return "Passwords do not match.";
+                  }
+                  return undefined;
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -363,6 +403,12 @@ export function SignupForm() {
 
             <form.Field
               name="terms"
+              validators={{
+                onChange: ({ value }) => {
+                  if (value === true) return undefined;
+                  return "You must accept the terms to continue.";
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;

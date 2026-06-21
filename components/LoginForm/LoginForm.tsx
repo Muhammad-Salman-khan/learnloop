@@ -1,5 +1,5 @@
-/* eslint-disable react/no-children-prop -- TanStack Form requires render-prop `children` on <form.Field> and <form.Subscribe>. */
 "use client";
+/* eslint-disable react/no-children-prop -- TanStack Form requires render-prop `children` on <form.Field> and <form.Subscribe>. */
 
 import * as React from "react";
 import Link from "next/link";
@@ -63,9 +63,6 @@ export function LoginForm() {
       password: "",
       remember: true,
     } as LoginInput & { remember: boolean },
-    validators: {
-      onChange: loginSchema,
-    },
     onSubmit: async ({ value }) => {
       setFormError(null);
       try {
@@ -124,6 +121,16 @@ export function LoginForm() {
           <FieldGroup>
             <form.Field
               name="email"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = loginSchema.shape.email.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues
+                        .map((issue) => issue.message)
+                        .filter((m): m is string => Boolean(m));
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -155,6 +162,16 @@ export function LoginForm() {
 
             <form.Field
               name="password"
+              validators={{
+                onChange: ({ value }) => {
+                  const result = loginSchema.shape.password.safeParse(value);
+                  return result.success
+                    ? undefined
+                    : result.error.issues
+                        .map((issue) => issue.message)
+                        .filter((m): m is string => Boolean(m));
+                },
+              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;

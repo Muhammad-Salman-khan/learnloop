@@ -8,10 +8,13 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadBufferToCloudinary = async (buffer: Buffer, folder?: string) => {
+const uploadBufferToCloudinaryVideo = async (
+  buffer: Buffer,
+  folder?: string,
+) => {
   return new Promise<CloudinaryUploadResult>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { folder },
+      { folder, resource_type: "video" },
       (error, result) => {
         if (error) return reject(error);
         if (!result) {
@@ -24,24 +27,24 @@ const uploadBufferToCloudinary = async (buffer: Buffer, folder?: string) => {
   });
 };
 
-export const CloudinayUploadImage = async (thumbnail: File | null) => {
+export const CloudinayUploadVideo = async (thumbnail: File | null) => {
   try {
     const file = thumbnail;
     if (!file) {
       return ReturnResponse({
         status: 400,
         success: false,
-        message: "Please upload an image",
-        error: "thumbnail_missing",
+        message: "Please upload an video",
+        error: "video missing",
       });
     }
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const result = await uploadBufferToCloudinary(buffer, "lms-students");
+    const result = await uploadBufferToCloudinaryVideo(buffer, "lms-students");
     return ReturnResponse({
       status: 200,
       success: true,
-      message: "Image uploaded successfully",
+      message: "video uploaded successfully",
       data: {
         public_id: result.public_id,
         secure_url: result.secure_url,
@@ -57,7 +60,7 @@ export const CloudinayUploadImage = async (thumbnail: File | null) => {
     return ReturnResponse({
       status: 500,
       success: false,
-      message: "Failed to upload image",
+      message: "Failed to upload video",
       error: message,
     });
   }

@@ -44,7 +44,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
 
-import { signupSchema, type SignupInput } from "@/lib/Types/auth";
+import { signupFormSchema, type SignupFormValues } from "@/lib/Types/auth";
 
 function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   const errors = f.state.meta.errors;
@@ -90,7 +90,10 @@ export function SignupForm() {
       password: "",
       confirmPassword: "",
       terms: false,
-    } as SignupInput & { terms: boolean },
+    } satisfies SignupFormValues,
+    validators: {
+      onChange: signupFormSchema,
+    },
     onSubmit: async ({ value }) => {
       setFormError(null);
       try {
@@ -155,16 +158,6 @@ export function SignupForm() {
           <FieldGroup>
             <form.Field
               name="name"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = signupSchema.shape.name.safeParse(value);
-                  return result.success
-                    ? undefined
-                    : result.error.issues
-                        .map((issue) => issue.message)
-                        .filter((m): m is string => Boolean(m));
-                },
-              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -195,16 +188,6 @@ export function SignupForm() {
 
             <form.Field
               name="email"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = signupSchema.shape.email.safeParse(value);
-                  return result.success
-                    ? undefined
-                    : result.error.issues
-                        .map((issue) => issue.message)
-                        .filter((m): m is string => Boolean(m));
-                },
-              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -236,16 +219,6 @@ export function SignupForm() {
 
             <form.Field
               name="password"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = signupSchema.shape.password.safeParse(value);
-                  return result.success
-                    ? undefined
-                    : result.error.issues
-                        .map((issue) => issue.message)
-                        .filter((m): m is string => Boolean(m));
-                },
-              }}
               children={(field) => {
                 const value = field.state.value;
                 const isInvalid =
@@ -403,12 +376,6 @@ export function SignupForm() {
 
             <form.Field
               name="terms"
-              validators={{
-                onChange: ({ value }) => {
-                  if (value === true) return undefined;
-                  return "You must accept the terms to continue.";
-                },
-              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;

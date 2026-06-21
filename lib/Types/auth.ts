@@ -34,6 +34,22 @@ export const signupSchema = z
 
 export type SignupInput = z.infer<typeof signupSchema>;
 
+export const loginFormSchema = loginSchema.extend({
+  remember: z.boolean(),
+});
+
+export type LoginFormValues = z.infer<typeof loginFormSchema>;
+
+export const signupFormSchema = signupSchema.extend({
+  terms: z
+    .boolean()
+    .refine((v) => v === true, {
+      error: "You must accept the terms to continue.",
+    }),
+});
+
+export type SignupFormValues = z.infer<typeof signupFormSchema>;
+
 export type AuthFormState = {
   status: "idle" | "error" | "success";
   message?: string;

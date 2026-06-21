@@ -37,7 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 
-import { loginSchema, type LoginInput } from "@/lib/Types/auth";
+import { loginFormSchema, type LoginFormValues } from "@/lib/Types/auth";
 
 function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   const errors = f.state.meta.errors;
@@ -62,7 +62,10 @@ export function LoginForm() {
       email: "",
       password: "",
       remember: true,
-    } as LoginInput & { remember: boolean },
+    } satisfies LoginFormValues,
+    validators: {
+      onChange: loginFormSchema,
+    },
     onSubmit: async ({ value }) => {
       setFormError(null);
       try {
@@ -121,16 +124,6 @@ export function LoginForm() {
           <FieldGroup>
             <form.Field
               name="email"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = loginSchema.shape.email.safeParse(value);
-                  return result.success
-                    ? undefined
-                    : result.error.issues
-                        .map((issue) => issue.message)
-                        .filter((m): m is string => Boolean(m));
-                },
-              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -162,16 +155,6 @@ export function LoginForm() {
 
             <form.Field
               name="password"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = loginSchema.shape.password.safeParse(value);
-                  return result.success
-                    ? undefined
-                    : result.error.issues
-                        .map((issue) => issue.message)
-                        .filter((m): m is string => Boolean(m));
-                },
-              }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;

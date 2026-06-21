@@ -74,15 +74,14 @@ export function LoginForm() {
         };
         const { message, error, success } = await loginWithEmail(payload);
         if (!success) {
-          toast.error(error, {
+          return toast.error(error, {
             description: error ?? `something went wrong`,
           });
         }
         toast.success(message, {
           description: "You're now signed in.",
         });
-        router.push("/dashboard");
-        router.refresh();
+        return router.push("/dashboard");
       } catch (error) {
         if (error instanceof Error && error.message === "already_exists") {
           setFormError("An account with this email already exists.");

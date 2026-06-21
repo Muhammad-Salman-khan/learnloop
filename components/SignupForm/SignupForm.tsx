@@ -105,22 +105,21 @@ export function SignupForm() {
         };
         const { message, error, success } = await SignUpWithEmail(payload);
         if (!success) {
-          toast.error(error, {
+          return toast.error(error, {
             description: error ?? "something went wrong",
           });
         }
         toast.success(message, {
           description: "You're now signed in.",
         });
-        router.push("/login");
-        router.refresh();
+        return router.push("/login");
       } catch (error) {
         if (error instanceof Error && error.message === "already_exists") {
           setFormError("An account with this email already exists.");
         } else {
           setFormError("We couldn't create your account. Please try again.");
         }
-        toast.error("Sign up failed.", {
+        return toast.error("Sign up failed.", {
           description: formError ?? "Please review your details.",
         });
       }

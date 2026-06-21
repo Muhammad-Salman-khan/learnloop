@@ -30,5 +30,10 @@ export const auth = betterAuth({
       prompt: "select_account consent",
     },
   },
-  plugins: [admin(), nextCookies()],
+  plugins: [
+    admin({
+      defaultRole: "student",
+    }),
+    nextCookies(),
+  ],
 });

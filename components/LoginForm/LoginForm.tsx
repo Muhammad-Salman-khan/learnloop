@@ -36,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import { loginFormSchema, type LoginFormValues } from "@/lib/Types/auth";
 import Image from "next/image";
+import { loginWithEmail } from "@/lib/FormAuth";
 
 function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   const errors = f.state.meta.errors;
@@ -65,30 +66,34 @@ export function LoginForm() {
     },
     onSubmit: async ({ value }) => {
       setFormError(null);
+      //
       try {
         const payload = {
           email: value.email.trim(),
           password: value.password,
         };
-        const res = await fetch("/api/auth/sign-in/email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          throw new Error("invalid_credentials");
+        const { message, error, success } = await loginWithEmail(payload);
+        if (!success) {
+          toast.error(error, {
+            description: error ?? `something went wrong`,
+          });
         }
-        toast.success("Welcome back.", {
+        toast.success(message, {
           description: "You're now signed in.",
         });
         router.push("/dashboard");
         router.refresh();
-      } catch {
-        setFormError("Invalid email or password. Please try again.");
-        toast.error("Sign in failed.", {
-          description: "Check your email and password.",
+      } catch (error) {
+        if (error instanceof Error && error.message === "already_exists") {
+          setFormError("An account with this email already exists.");
+        } else {
+          setFormError("We couldn't create your account. Please try again.");
+        }
+        toast.error("Sign up failed.", {
+          description: formError ?? "Please review your details.",
         });
       }
+      //
     },
   });
 

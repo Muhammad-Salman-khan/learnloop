@@ -39,27 +39,31 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 
-import { signupFormSchema, type SignupFormValues } from "@/lib/Types/auth";
+import {
+  signupFormSchema,
+  SignupInput,
+  type SignupFormValues,
+} from "@/lib/Types/auth";
+import { SignUpWithEmail } from "@/lib/FormAuth";
 
 function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   const errors = f.state.meta.errors;
   if (!errors.length) return null;
   const first = errors[0];
   const message =
-    first && typeof first === "object" && "message" in first
-      ? String(first.message)
-      : typeof first === "string"
-        ? first
-        : "Invalid value.";
+    first && typeof first === "object" && "message" in first ?
+      String(first.message)
+    : typeof first === "string" ? first
+    : "Invalid value.";
   return <FieldError errors={[{ message }]} />;
 }
 
 const PASSWORD_RULES = [
-    {
-      id: "length",
-      label: "At least 8 characters",
-      test: (v: string) => v.length >= 8,
-    },
+  {
+    id: "length",
+    label: "At least 8 characters",
+    test: (v: string) => v.length >= 8,
+  },
   {
     id: "lower",
     label: "One lowercase letter",
@@ -99,24 +103,19 @@ export function SignupForm() {
           email: value.email.trim(),
           password: value.password,
         };
-        const res = await fetch("/api/auth/sign-up/email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) {
-          const status = res.status;
-          throw new Error(
-            status === 422 ? "already_exists" : "invalid_request",
-          );
+        const { message, error, success } = await SignUpWithEmail(payload);
+        if (!success) {
+          toast.error(error, {
+            description: error ?? "something went wrong",
+          });
         }
-        toast.success("Account created.", {
+        toast.success(message, {
           description: "You're now signed in.",
         });
-        router.push("/dashboard");
+        router.push("/login");
         router.refresh();
-      } catch (err) {
-        if (err instanceof Error && err.message === "already_exists") {
+      } catch (error) {
+        if (error instanceof Error && error.message === "already_exists") {
           setFormError("An account with this email already exists.");
         } else {
           setFormError("We couldn't create your account. Please try again.");
@@ -143,13 +142,13 @@ export function SignupForm() {
         }}
         className="flex flex-col gap-5"
       >
-        {formError ? (
+        {formError ?
           <Alert variant="destructive" role="alert">
             <AlertCircleIcon data-icon="inline-start" />
             <AlertTitle>Couldn&apos;t create your account</AlertTitle>
             <AlertDescription>{formError}</AlertDescription>
           </Alert>
-        ) : null}
+        : null}
 
         <FieldGroup className="gap-5">
           <form.Field
@@ -260,15 +259,13 @@ export function SignupForm() {
                         aria-pressed={showPassword}
                         onClick={() => setShowPassword((v) => !v)}
                       >
-                        {showPassword ? (
+                        {showPassword ?
                           <EyeOffIcon data-icon="inline" />
-                        ) : (
-                          <EyeIcon data-icon="inline" />
-                        )}
+                        : <EyeIcon data-icon="inline" />}
                       </Button>
                     </InputGroupAddon>
                   </InputGroup>
-                  {!isInvalid && value ? (
+                  {!isInvalid && value ?
                     <ul
                       aria-label="Password requirements"
                       className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs sm:grid-cols-2"
@@ -280,23 +277,22 @@ export function SignupForm() {
                             key={rule.id}
                             className="flex items-center gap-2 text-muted-foreground"
                           >
-                            {meets ? (
+                            {meets ?
                               <CircleCheckIcon
                                 data-icon="inline-start"
                                 className="size-3.5 text-foreground/80"
                                 aria-hidden
                               />
-                            ) : (
-                              <span
+                            : <span
                                 aria-hidden
                                 className="inline-flex size-3.5 items-center justify-center rounded-full border border-border"
                               />
-                            )}
+                            }
                             <span
                               className={
-                                meets
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
+                                meets ? "text-foreground" : (
+                                  "text-muted-foreground"
+                                )
                               }
                             >
                               {rule.label}
@@ -305,7 +301,7 @@ export function SignupForm() {
                         );
                       })}
                     </ul>
-                  ) : null}
+                  : null}
                   <FieldInfo field={field} />
                 </Field>
               );
@@ -364,15 +360,13 @@ export function SignupForm() {
                         aria-pressed={showConfirm}
                         onClick={() => setShowConfirm((v) => !v)}
                       >
-                        {showConfirm ? (
+                        {showConfirm ?
                           <EyeOffIcon data-icon="inline" />
-                        ) : (
-                          <EyeIcon data-icon="inline" />
-                        )}
+                        : <EyeIcon data-icon="inline" />}
                       </Button>
                     </InputGroupAddon>
                   </InputGroup>
-                  {matches && !isInvalid ? (
+                  {matches && !isInvalid ?
                     <FieldDescription className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/80">
                       <CheckCircle2Icon
                         data-icon="inline-start"
@@ -381,7 +375,7 @@ export function SignupForm() {
                       />
                       Passwords match.
                     </FieldDescription>
-                  ) : null}
+                  : null}
                   <FieldInfo field={field} />
                 </Field>
               );
@@ -449,13 +443,12 @@ export function SignupForm() {
               className="h-11 w-full rounded-lg text-[14px] font-medium shadow-sm"
               disabled={!canSubmit || isSubmitting}
             >
-              {isSubmitting ? (
+              {isSubmitting ?
                 <>
                   <Spinner />
                   Creating account…
                 </>
-              ) : (
-                <>
+              : <>
                   <UserPlusIcon data-icon="inline-start" />
                   Create account
                   <ArrowRightIcon
@@ -464,7 +457,7 @@ export function SignupForm() {
                     aria-hidden
                   />
                 </>
-              )}
+              }
             </Button>
           )}
         />

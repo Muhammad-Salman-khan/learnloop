@@ -11,6 +11,13 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+enum role {
+  superAdmin
+  admin
+  staff
+  teacher
+  student 
+}
 
 model User {
   id            String    @id
@@ -20,7 +27,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String?
+  role          role     @default(student) 
   banned        Boolean?  @default(false)
   banReason     String?
   banExpires    DateTime?

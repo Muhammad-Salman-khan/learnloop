@@ -45,7 +45,7 @@ export default function RootLayout({
       suppressContentEditableWarning
       lang="en"
       className={cn(
-        "h-full min-h-screen",
+        "h-full ",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
@@ -53,7 +53,7 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <body className="min-h-screen max-w-screen flex flex-col">
+      <body className="max-w-screen flex flex-col">
         <QueryProvider>
           <ThemeProvider
             attribute="class"

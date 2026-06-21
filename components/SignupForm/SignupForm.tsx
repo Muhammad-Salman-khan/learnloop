@@ -8,33 +8,27 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   AlertCircleIcon,
+  ArrowRightIcon,
   CheckCircle2Icon,
   CircleCheckIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
   MailIcon,
-  UserPlusIcon,
+  ShieldCheckIcon,
   UserIcon,
+  UserPlusIcon,
 } from "lucide-react";
 import type { AnyFieldApi } from "@tanstack/react-form";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field";
 import {
   InputGroup,
@@ -42,6 +36,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 
 import { signupFormSchema, type SignupFormValues } from "@/lib/Types/auth";
@@ -51,19 +46,20 @@ function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   if (!errors.length) return null;
   const first = errors[0];
   const message =
-    first && typeof first === "object" && "message" in first ?
-      String(first.message)
-    : typeof first === "string" ? first
-    : "Invalid value.";
+    first && typeof first === "object" && "message" in first
+      ? String(first.message)
+      : typeof first === "string"
+        ? first
+        : "Invalid value.";
   return <FieldError errors={[{ message }]} />;
 }
 
 const PASSWORD_RULES = [
-  {
-    id: "length",
-    label: "At least 8 characters",
-    test: (v: string) => v.length >= 8,
-  },
+    {
+      id: "length",
+      label: "At least 8 characters",
+      test: (v: string) => v.length >= 8,
+    },
   {
     id: "lower",
     label: "One lowercase letter",
@@ -96,6 +92,7 @@ export function SignupForm() {
     },
     onSubmit: async ({ value }) => {
       setFormError(null);
+
       try {
         const payload = {
           name: value.name.trim(),
@@ -131,268 +128,290 @@ export function SignupForm() {
     },
   });
 
+  const inputGroupClass =
+    "h-11 rounded-lg bg-muted/40 transition-colors focus-within:bg-background focus-within:ring-2 focus-within:ring-ring/40";
+  const labelClass = "text-[13px] font-medium text-foreground";
+
   return (
-    <Card className="border-border/60 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-base">Create your account</CardTitle>
-        <CardDescription>A few details to get you started.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="flex flex-col gap-5"
-        >
-          {formError ?
-            <Alert variant="destructive" role="alert">
-              <AlertCircleIcon data-icon="inline-start" />
-              <AlertTitle>Couldn&apos;t create your account</AlertTitle>
-              <AlertDescription>{formError}</AlertDescription>
-            </Alert>
-          : null}
+    <div className="flex flex-col">
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+        className="flex flex-col gap-5"
+      >
+        {formError ? (
+          <Alert variant="destructive" role="alert">
+            <AlertCircleIcon data-icon="inline-start" />
+            <AlertTitle>Couldn&apos;t create your account</AlertTitle>
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
+        ) : null}
 
-          <FieldGroup>
-            <form.Field
-              name="name"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Full name</FieldLabel>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start">
-                        <UserIcon data-icon="inline-start" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id={field.name}
-                        name={field.name}
-                        type="text"
-                        autoComplete="name"
-                        placeholder="Ada Lovelace"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
-                        aria-invalid={isInvalid}
-                      />
-                    </InputGroup>
-                    <FieldInfo field={field} />
-                  </Field>
-                );
-              }}
-            />
-
-            <form.Field
-              name="email"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Email address</FieldLabel>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start">
-                        <MailIcon data-icon="inline-start" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id={field.name}
-                        name={field.name}
-                        type="email"
-                        autoComplete="email"
-                        inputMode="email"
-                        placeholder="you@example.com"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
-                        aria-invalid={isInvalid}
-                      />
-                    </InputGroup>
-                    <FieldInfo field={field} />
-                  </Field>
-                );
-              }}
-            />
-
-            <form.Field
-              name="password"
-              children={(field) => {
-                const value = field.state.value;
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start">
-                        <LockIcon data-icon="inline-start" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id={field.name}
-                        name={field.name}
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="At least 8 characters"
-                        value={value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
-                        aria-invalid={isInvalid}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                          aria-pressed={showPassword}
-                          onClick={() => setShowPassword((v) => !v)}
-                        >
-                          {showPassword ?
-                            <EyeOffIcon data-icon="inline" />
-                          : <EyeIcon data-icon="inline" />}
-                        </Button>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    <FieldInfo field={field} />
-                    {!isInvalid && value ?
-                      <ul
-                        aria-label="Password requirements"
-                        className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/60 bg-muted/40 p-3 text-xs sm:grid-cols-2"
-                      >
-                        {PASSWORD_RULES.map((rule) => {
-                          const meets = rule.test(value);
-                          return (
-                            <li
-                              key={rule.id}
-                              className="flex items-center gap-2 text-muted-foreground"
-                            >
-                              {meets ?
-                                <CircleCheckIcon
-                                  data-icon="inline-start"
-                                  className="size-3.5 text-primary"
-                                  aria-hidden
-                                />
-                              : <span
-                                  aria-hidden
-                                  className="inline-flex size-3.5 items-center justify-center rounded-full border border-border"
-                                />
-                              }
-                              <span
-                                className={
-                                  meets ? "text-foreground" : (
-                                    "text-muted-foreground"
-                                  )
-                                }
-                              >
-                                {rule.label}
-                              </span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    : null}
-                  </Field>
-                );
-              }}
-            />
-
-            <form.Field
-              name="confirmPassword"
-              validators={{
-                onChangeListenTo: ["password"],
-                onChange: ({ value, fieldApi }) => {
-                  if (!value) {
-                    return undefined;
-                  }
-                  if (value !== fieldApi.form.getFieldValue("password")) {
-                    return "Passwords do not match.";
-                  }
-                  return undefined;
-                },
-              }}
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                const matches =
-                  Boolean(field.state.value) &&
-                  field.state.value === form.state.values.password;
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>
-                      Confirm password
-                    </FieldLabel>
-                    <InputGroup>
-                      <InputGroupAddon align="inline-start">
-                        <LockIcon data-icon="inline-start" />
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id={field.name}
-                        name={field.name}
-                        type={showConfirm ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="Repeat your password"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        onBlur={field.handleBlur}
-                        aria-invalid={isInvalid}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={
-                            showConfirm ? "Hide password" : "Show password"
-                          }
-                          aria-pressed={showConfirm}
-                          onClick={() => setShowConfirm((v) => !v)}
-                        >
-                          {showConfirm ?
-                            <EyeOffIcon data-icon="inline" />
-                          : <EyeIcon data-icon="inline" />}
-                        </Button>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    {matches && !isInvalid ?
-                      <FieldDescription className="flex items-center gap-1.5 text-primary">
-                        <CheckCircle2Icon
-                          data-icon="inline-start"
-                          className="size-3.5"
-                          aria-hidden
-                        />
-                        Passwords match.
-                      </FieldDescription>
-                    : null}
-                    <FieldInfo field={field} />
-                  </Field>
-                );
-              }}
-            />
-
-            <form.Field
-              name="terms"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-                return (
-                  <Field orientation="horizontal" data-invalid={isInvalid}>
-                    <Checkbox
+        <FieldGroup className="gap-5">
+          <form.Field
+            name="name"
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid} className="gap-2">
+                  <FieldLabel htmlFor={field.name} className={labelClass}>
+                    Full name
+                  </FieldLabel>
+                  <InputGroup className={inputGroupClass}>
+                    <InputGroupAddon align="inline-start">
+                      <UserIcon data-icon="inline-start" />
+                    </InputGroupAddon>
+                    <InputGroupInput
                       id={field.name}
                       name={field.name}
-                      checked={field.state.value}
-                      onCheckedChange={(checked) =>
-                        field.handleChange(checked === true)
-                      }
+                      type="text"
+                      autoComplete="name"
+                      placeholder="Ada Lovelace"
+                      className="text-[15px]"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
                       aria-invalid={isInvalid}
                     />
+                  </InputGroup>
+                  <FieldInfo field={field} />
+                </Field>
+              );
+            }}
+          />
+
+          <form.Field
+            name="email"
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid} className="gap-2">
+                  <FieldLabel htmlFor={field.name} className={labelClass}>
+                    Work email
+                  </FieldLabel>
+                  <InputGroup className={inputGroupClass}>
+                    <InputGroupAddon align="inline-start">
+                      <MailIcon data-icon="inline-start" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id={field.name}
+                      name={field.name}
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      placeholder="you@company.com"
+                      className="text-[15px]"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={isInvalid}
+                    />
+                  </InputGroup>
+                  <FieldDescription className="text-xs">
+                    We&apos;ll send a verification link — no marketing email.
+                  </FieldDescription>
+                  <FieldInfo field={field} />
+                </Field>
+              );
+            }}
+          />
+
+          <form.Field
+            name="password"
+            children={(field) => {
+              const value = field.state.value;
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={isInvalid} className="gap-2">
+                  <FieldLabel htmlFor={field.name} className={labelClass}>
+                    Password
+                  </FieldLabel>
+                  <InputGroup className={inputGroupClass}>
+                    <InputGroupAddon align="inline-start">
+                      <LockIcon data-icon="inline-start" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id={field.name}
+                      name={field.name}
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="At least 8 characters"
+                      className="text-[15px]"
+                      value={value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={isInvalid}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showPassword}
+                        onClick={() => setShowPassword((v) => !v)}
+                      >
+                        {showPassword ? (
+                          <EyeOffIcon data-icon="inline" />
+                        ) : (
+                          <EyeIcon data-icon="inline" />
+                        )}
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  {!isInvalid && value ? (
+                    <ul
+                      aria-label="Password requirements"
+                      className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs sm:grid-cols-2"
+                    >
+                      {PASSWORD_RULES.map((rule) => {
+                        const meets = rule.test(value);
+                        return (
+                          <li
+                            key={rule.id}
+                            className="flex items-center gap-2 text-muted-foreground"
+                          >
+                            {meets ? (
+                              <CircleCheckIcon
+                                data-icon="inline-start"
+                                className="size-3.5 text-foreground/80"
+                                aria-hidden
+                              />
+                            ) : (
+                              <span
+                                aria-hidden
+                                className="inline-flex size-3.5 items-center justify-center rounded-full border border-border"
+                              />
+                            )}
+                            <span
+                              className={
+                                meets
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              {rule.label}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : null}
+                  <FieldInfo field={field} />
+                </Field>
+              );
+            }}
+          />
+
+          <form.Field
+            name="confirmPassword"
+            validators={{
+              onChangeListenTo: ["password"],
+              onChange: ({ value, fieldApi }) => {
+                if (!value) {
+                  return undefined;
+                }
+                if (value !== fieldApi.form.getFieldValue("password")) {
+                  return "Passwords do not match.";
+                }
+                return undefined;
+              },
+            }}
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              const matches =
+                Boolean(field.state.value) &&
+                field.state.value === form.state.values.password;
+              return (
+                <Field data-invalid={isInvalid} className="gap-2">
+                  <FieldLabel htmlFor={field.name} className={labelClass}>
+                    Confirm password
+                  </FieldLabel>
+                  <InputGroup className={inputGroupClass}>
+                    <InputGroupAddon align="inline-start">
+                      <LockIcon data-icon="inline-start" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id={field.name}
+                      name={field.name}
+                      type={showConfirm ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Repeat your password"
+                      className="text-[15px]"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={isInvalid}
+                    />
+                    <InputGroupAddon align="inline-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={
+                          showConfirm ? "Hide password" : "Show password"
+                        }
+                        aria-pressed={showConfirm}
+                        onClick={() => setShowConfirm((v) => !v)}
+                      >
+                        {showConfirm ? (
+                          <EyeOffIcon data-icon="inline" />
+                        ) : (
+                          <EyeIcon data-icon="inline" />
+                        )}
+                      </Button>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  {matches && !isInvalid ? (
+                    <FieldDescription className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/80">
+                      <CheckCircle2Icon
+                        data-icon="inline-start"
+                        className="size-3.5"
+                        aria-hidden
+                      />
+                      Passwords match.
+                    </FieldDescription>
+                  ) : null}
+                  <FieldInfo field={field} />
+                </Field>
+              );
+            }}
+          />
+
+          <form.Field
+            name="terms"
+            children={(field) => {
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field
+                  orientation="horizontal"
+                  data-invalid={isInvalid}
+                  className="items-start gap-2.5 rounded-lg border border-border/60 bg-muted/30 p-3"
+                >
+                  <Checkbox
+                    id={field.name}
+                    name={field.name}
+                    checked={field.state.value}
+                    onCheckedChange={(checked) =>
+                      field.handleChange(checked === true)
+                    }
+                    aria-invalid={isInvalid}
+                  />
+                  <div className="flex flex-col gap-1">
                     <FieldLabel
                       htmlFor={field.name}
-                      className="font-normal leading-snug text-muted-foreground"
+                      className="text-[13px] font-normal leading-snug text-foreground/90"
                     >
                       I agree to the{" "}
                       <Link
@@ -411,61 +430,78 @@ export function SignupForm() {
                       .
                     </FieldLabel>
                     <FieldInfo field={field} />
-                  </Field>
-                );
-              }}
-            />
-          </FieldGroup>
-
-          <form.Subscribe
-            selector={(state) => ({
-              canSubmit: state.canSubmit,
-              isSubmitting: state.isSubmitting,
-            })}
-            children={({ canSubmit, isSubmitting }) => (
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={!canSubmit || isSubmitting}
-              >
-                {isSubmitting ?
-                  <>
-                    <Spinner />
-                    Creating account…
-                  </>
-                : <>
-                    <UserPlusIcon data-icon="inline-start" />
-                    Create account
-                  </>
-                }
-              </Button>
-            )}
+                  </div>
+                </Field>
+              );
+            }}
           />
+        </FieldGroup>
 
-          <FieldSeparator>
-            <span className="bg-card px-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Or
-            </span>
-          </FieldSeparator>
-
-          <Button type="button" variant="outline" size="lg" className="w-full">
-            <GoogleMark />
-            Continue with Google
-          </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+        <form.Subscribe
+          selector={(state) => ({
+            canSubmit: state.canSubmit,
+            isSubmitting: state.isSubmitting,
+          })}
+          children={({ canSubmit, isSubmitting }) => (
+            <Button
+              type="submit"
+              size="lg"
+              className="h-11 w-full rounded-lg text-[14px] font-medium shadow-sm"
+              disabled={!canSubmit || isSubmitting}
             >
-              Sign in
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+              {isSubmitting ? (
+                <>
+                  <Spinner />
+                  Creating account…
+                </>
+              ) : (
+                <>
+                  <UserPlusIcon data-icon="inline-start" />
+                  Create account
+                  <ArrowRightIcon
+                    data-icon="inline-end"
+                    className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
+                    aria-hidden
+                  />
+                </>
+              )}
+            </Button>
+          )}
+        />
+
+        <div className="relative my-1 flex items-center justify-center">
+          <Separator className="absolute inset-x-0" />
+          <span className="relative bg-background px-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            Or sign up with
+          </span>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="h-11 w-full rounded-lg border-border/80 text-[14px] font-medium shadow-xs transition-colors hover:bg-muted/60"
+        >
+          <GoogleMark />
+          Continue with Google
+        </Button>
+
+        <p className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+          <ShieldCheckIcon className="size-3" aria-hidden />
+          14-day free trial · No credit card required
+        </p>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 }
 

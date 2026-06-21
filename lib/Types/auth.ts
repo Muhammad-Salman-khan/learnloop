@@ -38,9 +38,19 @@ export const signupFormSchema = signupSchema
   .refine((data) => data.password === data.confirmPassword, {
     error: "Passwords do not match.",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.terms === true, {
+    error: "You must accept the terms to continue.",
+    path: ["terms"],
   });
 
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
+
+export const loginFormSchema = loginSchema.extend({
+  remember: z.boolean(),
+});
+
+export type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 export type AuthFormState = {
   status: "idle" | "error" | "success";

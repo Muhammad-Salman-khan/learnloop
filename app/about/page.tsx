@@ -19,7 +19,7 @@ export default function AboutPage() {
     <div className="flex w-full flex-1 flex-col bg-background text-foreground">
       {/* Header — same chrome as home so the marketing navigation stays
           consistent. Active page is marked via aria-current. */}
-      <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
@@ -43,11 +43,7 @@ export default function AboutPage() {
             >
               Outcomes
             </Link>
-            <Link
-              href="/about"
-              aria-current="page"
-              className="text-foreground"
-            >
+            <Link href="/about" aria-current="page" className="text-foreground">
               About
             </Link>
             <Link
@@ -98,8 +94,8 @@ export default function AboutPage() {
         </h2>
         <p className="mt-5 text-pretty text-[15.5px] leading-relaxed text-muted-foreground">
           Spin up a workspace, invite three collaborators, and ship a lesson
-          this week. The trial does not require a card, and we retire more
-          than we ship.
+          this week. The trial does not require a card, and we retire more than
+          we ship.
         </p>
         <div className="mt-10 flex w-full flex-col justify-center gap-3 sm:flex-row">
           <Button

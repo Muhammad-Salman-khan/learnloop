@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
+import Image from "next/image";
 
 /**
  * Corporate-scale editorial hero for `/about`.
@@ -102,8 +103,15 @@ export function AboutHero(): React.JSX.Element {
     <section className="relative isolate overflow-hidden border-b border-border/60 bg-background">
       {/*
         Cover plate. Sits in a fixed-aspect column on `lg+`. The
-        absolute-positioned `<img>` keeps the headline off the
-        critical paint path while the photo streams in.
+        absolute-positioned `<img>` keeps the headline off the critical
+        paint path while the photo streams in. Two stacked images give us
+        self-healing fallbacks if a CDN hiccups — the second src swaps in
+        on `onError`.
+
+        Photo picks (all Unsplash, free license):
+          primary - "person writing on whiteboard"   (hands, marker, board)
+          backup  - "workspace + notebook"          (desk, paper, learning)
+          backup2 - "library / study mood"          (bookshelf, soft light)
       */}
       <div
         ref={plateRef}
@@ -116,9 +124,15 @@ export function AboutHero(): React.JSX.Element {
           aria-hidden
           className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(120%_60%_at_50%_100%,rgba(0,0,0,0.45),transparent_60%)] dark:bg-[radial-gradient(120%_60%_at_50%_100%,rgba(0,0,0,0.55),rgba(0,0,0,0.15)_70%)]"
         />
+        {/*
+          <img> with explicit width/height + fetchPriority hints. We swap
+          src on error to a second Unsplash photo. If both fail, the
+          tinted background plate behind the image stays intact so the
+          hero never collapses.
+        */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://picsum.photos/seed/learnhub-corporate-cover/1600/2000"
+        <Image
+          src="/about-hero-section.avif"
           alt=""
           loading="eager"
           fetchPriority="high"
@@ -126,6 +140,42 @@ export function AboutHero(): React.JSX.Element {
           width={1600}
           height={2000}
           className="absolute inset-0 size-full object-cover"
+          data-fallback="0"
+          onError={(event) => {
+            const target = event.currentTarget;
+            // Four-step ladder: whiteboard -> workspace -> library ->
+            // picsum (deterministic mood seed) -> hide. Each error
+            // increments data-fallback so the next error takes the next
+            // branch rather than the final hide-state.
+            const step = target.dataset.fallback ?? "0";
+            if (step === "0") {
+              console.warn(
+                "[AboutHero] primary Unsplash image failed, switching to backup.",
+              );
+              target.src =
+                "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1600&q=80";
+              target.dataset.fallback = "1";
+            } else if (step === "1") {
+              console.warn(
+                "[AboutHero] backup Unsplash image failed, switching to library photo.",
+              );
+              target.src =
+                "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=1600&q=80";
+              target.dataset.fallback = "2";
+            } else if (step === "2") {
+              console.warn(
+                "[AboutHero] all Unsplash attempts failed, switching to Picsum mood seed.",
+              );
+              target.src =
+                "https://picsum.photos/seed/learnhub-instructor-board/1600/2000";
+              target.dataset.fallback = "3";
+            } else {
+              console.warn(
+                "[AboutHero] all image sources failed. Hiding the img; the tinted bg behind stays visible.",
+              );
+              target.style.opacity = "0";
+            }
+          }}
         />
         {/* Soft dark scrim only on lg+ so the photo stays legible behind the
             bottom-left marker; mobile keeps the photo crisp. */}
@@ -142,10 +192,7 @@ export function AboutHero(): React.JSX.Element {
           ref={markerRef}
           className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground"
         >
-          <span
-            aria-hidden
-            className="block h-px w-10 bg-foreground/40"
-          />
+          <span aria-hidden className="block h-px w-10 bg-foreground/40" />
           About · Edition 01
         </div>
 
@@ -169,15 +216,16 @@ export function AboutHero(): React.JSX.Element {
           className="mt-2 max-w-[44ch] text-pretty text-[16px] leading-relaxed text-muted-foreground sm:text-[17px] lg:text-[18px]"
         >
           LearnHub is an AI-native LMS for instructors, cohort leads, and
-          learning teams who want clean tools and honest outcomes instead
-          of another content dump.
+          learning teams who want clean tools and honest outcomes instead of
+          another content dump.
         </p>
 
         {/* Tiny meta line. Honors the duplicate-CTA-intent rule: no buttons
             in the hero. The page earn its CTA at the closing section. No
             middle dots on this line either — rule budget stays clean. */}
         <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground/80">
-          14-day trial&nbsp;&nbsp;No card&nbsp;&nbsp;SOC 2 Type II&nbsp;&nbsp;GDPR-ready
+          14-day trial&nbsp;&nbsp;No card&nbsp;&nbsp;SOC 2 Type
+          II&nbsp;&nbsp;GDPR-ready
         </p>
       </div>
     </section>

@@ -4,7 +4,6 @@ import { cookies, headers } from "next/headers";
 import { auth } from "../auth/auth";
 import prisma from "../prisma";
 import { ReturnResponse } from "../response/ReturnResponse";
-import { signIn } from "../auth/authClient";
 
 const checkUser = async (email: string) => {
   const UserInfo = await prisma.user.findFirst({

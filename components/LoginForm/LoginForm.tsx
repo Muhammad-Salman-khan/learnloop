@@ -37,6 +37,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { loginFormSchema, type LoginFormValues } from "@/lib/Types/auth";
 import Image from "next/image";
 import { loginWithEmail } from "@/lib/FormAuth";
+import { signIn } from "@/lib/auth/authClient";
 
 function FieldInfo({ field: f }: { field: AnyFieldApi }) {
   const errors = f.state.meta.errors;
@@ -95,7 +96,16 @@ export function LoginForm() {
       //
     },
   });
-
+  const loginWithGoogle = async () => {
+    try {
+      await signIn.social({ provider: "google", callbackURL: "/dashboard" });
+    } catch (error: any) {
+      toast.error(error?.message, {
+        description: error?.message ?? "Please review your details.",
+      });
+      return console.error(error);
+    }
+  };
   return (
     <div className="flex flex-col">
       <form
@@ -256,11 +266,6 @@ export function LoginForm() {
               : <>
                   <LogInIcon data-icon="inline-start" />
                   Sign in
-                  <ArrowRightIcon
-                    data-icon="inline-end"
-                    className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180"
-                    aria-hidden
-                  />
                 </>
               }
             </Button>
@@ -274,6 +279,7 @@ export function LoginForm() {
         </FieldSeparator>
 
         <Button
+          onClick={loginWithGoogle}
           type="button"
           variant="outline"
           size="lg"

@@ -39,6 +39,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --font-display: var(--font-display);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -217,6 +218,17 @@
   ::selection {
     background-color: color-mix(in oklch, var(--primary) 22%, transparent);
     color: var(--foreground);
+  }
+
+  /* ---------- Display face utility (editorial pages only) ----------
+     Maps the .font-display utility class to the variable exposed by the
+     Source Serif 4 next/font import in app/layout.tsx. Utility is opt-in
+     and only used on the about page so the rest of the app stays on
+     Geist / Inter. */
+  .font-display {
+    font-family: var(--font-display), ui-serif, Georgia, serif;
+    font-feature-settings: "ss01", "kern";
+    letter-spacing: -0.01em;
   }
 
   /* ---------- Reduced-motion safety net ---------- */

@@ -8,6 +8,7 @@ const page = async () => {
   });
   if (!session) redirect("/login");
   const { role } = session.user;
+
   if (role === "superAdmin") {
     redirect("/dashboard/superadmin");
   } else if (role === "admin") {

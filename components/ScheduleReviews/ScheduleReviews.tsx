@@ -471,13 +471,13 @@ export function ScheduleReviews({ slots, seedReviews }: ScheduleReviewsProps) {
                           // boundary — here — so PeriodSlotPicker's internals
                           // stay clean and type-safe.
                           getValue={
-                            ((n) =>
+                            ((n: string) =>
                               form.getFieldValue(
                                 n as Parameters<typeof form.getFieldValue>[0],
                               )) as unknown as (n: string) => unknown
                           }
                           setValue={
-                            ((n, v) =>
+                            ((n: string, v: unknown) =>
                               form.setFieldValue(
                                 n as Parameters<typeof form.setFieldValue>[0],
                                 v as Parameters<typeof form.setFieldValue>[1],

@@ -464,15 +464,27 @@ export function ScheduleReviews({ slots, seedReviews }: ScheduleReviewsProps) {
                       <FieldContent>
                         <PeriodSlotPicker
                           slots={slots}
-                          // TanStack v1 narrows the form API to a literal field
-                          // union; adapt it to the loose (string) => unknown
-                          // contract PeriodSlotPicker expects.
-                          form={
-                            {
-                              getFieldValue: (n) => form.getFieldValue(n as never),
-                              setFieldValue: (n, v) =>
-                                form.setFieldValue(n as never, v as never),
-                            } as PeriodSlotPickerProps["form"]
+                          // TanStack Form v1 narrows getFieldValue/setFieldValue
+                          // to a literal field-union parameter; we adapt up
+                          // to the loose (string) contract PeriodSlotPicker
+                          // declares. The cast happens at exactly one
+                          // boundary — here — so PeriodSlotPicker's internals
+                          // stay clean and type-safe.
+                          getValue={
+                            ((n) =>
+                              form.getFieldValue(
+                                n as Parameters<typeof form.getFieldValue>[0],
+                              )) as unknown as (n: string) => unknown
+                          }
+                          setValue={
+                            ((n, v) =>
+                              form.setFieldValue(
+                                n as Parameters<typeof form.setFieldValue>[0],
+                                v as Parameters<typeof form.setFieldValue>[1],
+                              )) as unknown as (
+                              n: string,
+                              v: unknown,
+                            ) => void
                           }
                           fieldName="slotId"
                           fieldState={field.state}
@@ -879,16 +891,18 @@ export default ScheduleReviews;
 // code or target changes so the user only sees compatible sessions. Kept
 // inline here (not in its own file) because it has zero reuse beyond this
 // form.
+// PeriodSlotPicker only needs two narrow capabilities off the host form:
+// reading `courseCode` and `target` so the slot list stays compatible, and
+// writing the picked slotId (and the auto-filled teacherName) back. Per the
+// TanStack Form React composition guide, passing the whole `form` API down
+// causes structural type conflicts because TanStack v1 narrows its
+// get/set-field methods to a literal field union. So we expose the two
+// specific operations as plain function props instead — no coupling to the
+// form instance, no casts, no narrowing fight.
 type PeriodSlotPickerProps = {
   readonly slots: ReadonlyArray<ScheduleSlot>;
-  // PeriodSlotPicker only needs to read a couple of fields off the host form
-  // and write one back. We accept the loose runtime contract so it can be
-  // plugged into any TanStack `<form>` regardless of how strict its inferred
-  // shape is (TanStack v1 narrows getFieldValue to a literal field union).
-  readonly form: {
-    readonly getFieldValue: (name: string) => unknown;
-    readonly setFieldValue: (name: string, value: unknown) => void;
-  };
+  readonly getValue: (name: string) => unknown;
+  readonly setValue: (name: string, value: unknown) => void;
   readonly fieldName: string;
   readonly fieldState: {
     readonly value: unknown;
@@ -898,12 +912,13 @@ type PeriodSlotPickerProps = {
 
 function PeriodSlotPicker({
   slots,
-  form,
+  getValue,
+  setValue,
   fieldName,
   fieldState,
 }: PeriodSlotPickerProps) {
-  const courseCode = String(form.getFieldValue("courseCode") ?? "");
-  const target = form.getFieldValue("target") as ReviewKind;
+  const courseCode = String(getValue("courseCode") ?? "");
+  const target = getValue("target") as ReviewKind;
 
   const compatible = useMemo(() => {
     if (!courseCode) return [] as ReadonlyArray<ScheduleSlot>;
@@ -932,11 +947,11 @@ function PeriodSlotPicker({
     <Select
       value={String(fieldState.value ?? "")}
       onValueChange={(v) => {
-        form.setFieldValue(fieldName, v);
+        setValue(fieldName, v);
         // Auto-fill the teacher when the slot is changed.
         const slot = slots.find((s) => s.id === v);
         if (slot) {
-          form.setFieldValue(
+          setValue(
             "teacherName",
             target === "class_teacher" ? slot.classTeacher : slot.instructor,
           );

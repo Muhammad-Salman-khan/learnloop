@@ -194,6 +194,7 @@ export function ScheduleReviews({ slots, seedReviews }: ScheduleReviewsProps) {
     );
 
     const form = useForm({
+      defaultValues: buildDefaults(),
       validators: {
         onChange: reviewSchema,
         onSubmit: reviewSchema,
@@ -463,7 +464,16 @@ export function ScheduleReviews({ slots, seedReviews }: ScheduleReviewsProps) {
                       <FieldContent>
                         <PeriodSlotPicker
                           slots={slots}
-                          form={form}
+                          // TanStack v1 narrows the form API to a literal field
+                          // union; adapt it to the loose (string) => unknown
+                          // contract PeriodSlotPicker expects.
+                          form={
+                            {
+                              getFieldValue: (n) => form.getFieldValue(n as never),
+                              setFieldValue: (n, v) =>
+                                form.setFieldValue(n as never, v as never),
+                            } as PeriodSlotPickerProps["form"]
+                          }
                           fieldName="slotId"
                           fieldState={field.state}
                         />
@@ -871,9 +881,13 @@ export default ScheduleReviews;
 // form.
 type PeriodSlotPickerProps = {
   readonly slots: ReadonlyArray<ScheduleSlot>;
+  // PeriodSlotPicker only needs to read a couple of fields off the host form
+  // and write one back. We accept the loose runtime contract so it can be
+  // plugged into any TanStack `<form>` regardless of how strict its inferred
+  // shape is (TanStack v1 narrows getFieldValue to a literal field union).
   readonly form: {
-    getFieldValue: (name: string) => unknown;
-    setFieldValue: (name: string, value: unknown) => void;
+    readonly getFieldValue: (name: string) => unknown;
+    readonly setFieldValue: (name: string, value: unknown) => void;
   };
   readonly fieldName: string;
   readonly fieldState: {

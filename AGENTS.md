@@ -95,6 +95,8 @@ These are non-negotiable. Every deviation is a mistake. No exceptions.
 | `page.tsx`             | MUST be a Server Component — no exceptions             |
 | Interactive components | MUST use `"use client"` and be extracted out of pages  |
 | UI library             | MUST use shadcn/ui — no other component libraries      |
+| Forms                  | MUST use `@tanstack/react-form` with zod validators    |
+| Layout primitive       | MUST use shadcn `Field` family for all form fields     |
 | Context7               | ALWAYS use Context7 for UI, forms, and Next.js         |
 | Component scope        | UI only — no business logic, no DB calls, no API logic |
 | File structure         | `components/ComponentName/ComponentName.tsx` — always  |

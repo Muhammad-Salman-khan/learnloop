@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -36,7 +33,7 @@ function gpaLabel(gpa: number): string {
 export function CoursesTable({ rows }: CoursesTableProps) {
   return (
     <Card>
-      <CardHeader className="flex flex-col gap-1 border-b sm:flex-row sm:items-end sm:justify-between">
+      <CardHeader className="flex flex-col gap-1 border-b">
         <div className="space-y-1">
           <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
             Workspace
@@ -45,16 +42,10 @@ export function CoursesTable({ rows }: CoursesTableProps) {
             Course portfolio
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Six enrolled courses this term. Click a row to open the course detail.
+            Six enrolled courses this term. Open the Schedule tab to see when
+            each session meets.
           </p>
         </div>
-        <Link
-          href="/dashboard/student/schedule"
-          className="inline-flex items-center gap-1 self-start text-xs font-medium text-foreground/80 hover:text-foreground sm:self-auto"
-        >
-          See weekly schedule
-          <ChevronRight className="size-3" aria-hidden="true" />
-        </Link>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <Table>
@@ -78,12 +69,9 @@ export function CoursesTable({ rows }: CoursesTableProps) {
                       <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                         {row.code}
                       </span>
-                      <Link
-                        href="/dashboard/student/courses"
-                        className="font-medium leading-tight hover:underline underline-offset-4"
-                      >
+                      <span className="font-medium leading-tight">
                         {row.title}
-                      </Link>
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="hidden text-sm text-muted-foreground md:table-cell">

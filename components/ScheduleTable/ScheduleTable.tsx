@@ -68,7 +68,12 @@ export function ScheduleTable({ slots }: ScheduleTableProps) {
               <TableHead className="pl-6 w-[80px]">Day</TableHead>
               <TableHead className="w-[140px]">Time</TableHead>
               <TableHead>Course</TableHead>
-              <TableHead className="hidden md:table-cell">Instructor</TableHead>
+              <TableHead className="hidden md:table-cell">
+                Class teacher
+              </TableHead>
+              <TableHead className="hidden md:table-cell">
+                Period teacher
+              </TableHead>
               <TableHead className="hidden md:table-cell">Room</TableHead>
               <TableHead className="pr-6 text-right">Mode</TableHead>
             </TableRow>
@@ -93,7 +98,17 @@ export function ScheduleTable({ slots }: ScheduleTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
-                  {slot.instructor}
+                  {slot.classTeacher}
+                </TableCell>
+                <TableCell className="hidden text-sm md:table-cell">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={slot.isPeriodTeacher ? "" : "text-muted-foreground"}>
+                      {slot.instructor}
+                    </span>
+                    {slot.isPeriodTeacher ? (
+                      <Badge variant="secondary">Substitute</Badge>
+                    ) : null}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
                   {slot.room}

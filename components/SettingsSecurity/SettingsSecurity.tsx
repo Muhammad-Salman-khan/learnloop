@@ -30,6 +30,10 @@ import {
   type PasswordFormValues,
 } from "@/lib/settings/security-schema";
 import { authSessions } from "@/lib/settings/settings-data";
+import {
+  firstErrorMessage,
+  toFieldErrorItems,
+} from "@/lib/settings/field-errors";
 
 // Client Component. Password form is on @tanstack/react-form with the
 // cross-field refine from zod mounted as an onSubmit validator. Active
@@ -98,9 +102,9 @@ export function SettingsSecurity() {
                       aria-invalid={Boolean(field.state.meta.errors.length)}
                       required
                     />
-                    <FieldError>
-                      {field.state.meta.errors[0]?.toString()}
-                    </FieldError>
+                    <FieldError
+                      errors={toFieldErrorItems(field.state.meta.errors)}
+                    />
                   </FieldContent>
                 </Field>
               )}
@@ -131,9 +135,9 @@ export function SettingsSecurity() {
                       At least 8 characters. Mix of upper, lower, and digits
                       recommended.
                     </FieldDescription>
-                    <FieldError>
-                      {field.state.meta.errors[0]?.toString()}
-                    </FieldError>
+                    <FieldError
+                      errors={toFieldErrorItems(field.state.meta.errors)}
+                    />
                   </FieldContent>
                 </Field>
               )}
@@ -160,9 +164,9 @@ export function SettingsSecurity() {
                       aria-invalid={Boolean(field.state.meta.errors.length)}
                       required
                     />
-                    <FieldError>
-                      {field.state.meta.errors[0]?.toString()}
-                    </FieldError>
+                    <FieldError
+                      errors={toFieldErrorItems(field.state.meta.errors)}
+                    />
                   </FieldContent>
                 </Field>
               )}
@@ -183,7 +187,7 @@ export function SettingsSecurity() {
                 role="alert"
                 className="text-xs font-medium text-destructive"
               >
-                {errors.length > 0 ? String(errors[0]) : ""}
+                {firstErrorMessage(errors) ?? ""}
               </p>
               <Button type="submit" disabled={!canSubmit || is}>
                 <Save className="size-3.5" aria-hidden="true" />

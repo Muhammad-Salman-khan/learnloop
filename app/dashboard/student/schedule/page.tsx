@@ -13,7 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScheduleTable } from "@/components/ScheduleTable/ScheduleTable";
-import { scheduleSlots } from "@/lib/dashboard/student-data";
+import { ScheduleReviews } from "@/components/ScheduleReviews/ScheduleReviews";
+import {
+  scheduleSlots,
+  teacherReviews,
+} from "@/lib/dashboard/student-data";
 
 // Server Component. The Schedule sub-page is a tabular view, per AGENTS no
 // Card lists for tabular data.
@@ -94,6 +98,8 @@ const SchedulePage = () => {
       </Card>
 
       <ScheduleTable slots={scheduleSlots} />
+
+      <ScheduleReviews slots={scheduleSlots} seedReviews={teacherReviews} />
     </div>
   );
 };

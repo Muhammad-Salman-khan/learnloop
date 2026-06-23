@@ -31,16 +31,40 @@ export type AssignmentScore = {
 };
 
 // Weekly timetable rows used on the Schedule page.
+//
+// `classTeacher` is the cohort homeroom / class teacher assigned to the
+// student's overall group for that course (one per course). The `instructor`
+// field is the teacher who runs THIS specific period — which may differ when a
+// course is shared across multiple sections. Reviews distinguish between the
+// two on purpose: a class teacher is reviewed once per course, while a period
+// teacher is reviewed per slot (so a swap teacher can be evaluated on their
+// specific delivery in a specific period).
 export type ScheduleSlot = {
   readonly id: string;
   readonly courseCode: string;
   readonly courseTitle: string;
   readonly instructor: string;
+  readonly classTeacher: string;
+  readonly isPeriodTeacher: boolean; // true when instructor != classTeacher
   readonly day: "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
   readonly startTime: string; // "09:00"
   readonly endTime: string; // "10:30"
   readonly room: string;
   readonly mode: "in_person" | "live_online" | "recorded";
+};
+
+// Student-authored review of an instructor, scoped to either the cohort's
+// class teacher (course-level) or a specific period teacher (slot-level).
+export type TeacherReview = {
+  readonly id: string;
+  readonly kind: "class_teacher" | "period_teacher";
+  readonly courseCode: string;
+  readonly slotId?: string; // required for period_teacher; resolved against ScheduleSlot.id
+  readonly teacherName: string;
+  readonly rating: 1 | 2 | 3 | 4 | 5;
+  readonly comment: string;
+  readonly anonymous: boolean;
+  readonly submittedAt: string;
 };
 
 // Direct message threads + their latest preview, used for the Messages inbox table.
@@ -317,7 +341,7 @@ export const announcements: ReadonlyArray<Announcement> = [
     id: "n-04",
     title: "Office hours moved, Web Eng II",
     body:
-      "Sir Hammad Raza office hours move to Thursday 15:00 to 17:00 for the next two weeks. Room CS-204.",
+      "Sir Hammad Raza office hours move to Thursday 15:00 to 17:00 for the next two weeks. Catch him in Room CS-212 before the Thursday lecture.",
     postedAt: "Posted 4 days ago",
     postedBy: "Sir Hammad Raza",
   },
@@ -509,6 +533,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "CS-301",
     courseTitle: "Data Structures and Algorithms",
     instructor: "Dr. Sana Qureshi",
+    classTeacher: "Dr. Sana Qureshi",
+    isPeriodTeacher: false,
     day: "Mon",
     startTime: "09:00",
     endTime: "10:30",
@@ -520,6 +546,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "CS-318",
     courseTitle: "Web Engineering II",
     instructor: "Sir Hammad Raza",
+    classTeacher: "Sir Hammad Raza",
+    isPeriodTeacher: false,
     day: "Tue",
     startTime: "11:00",
     endTime: "12:30",
@@ -531,6 +559,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "MTH-204",
     courseTitle: "Linear Algebra",
     instructor: "Dr. Imran Siddiqui",
+    classTeacher: "Dr. Imran Siddiqui",
+    isPeriodTeacher: false,
     day: "Wed",
     startTime: "14:00",
     endTime: "15:30",
@@ -542,6 +572,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "ENG-110",
     courseTitle: "Technical Writing",
     instructor: "Ms. Hira Naseem",
+    classTeacher: "Ms. Hira Naseem",
+    isPeriodTeacher: false,
     day: "Thu",
     startTime: "10:00",
     endTime: "11:30",
@@ -553,6 +585,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "CS-340",
     courseTitle: "Database Systems",
     instructor: "Sir Bilal Akhtar",
+    classTeacher: "Sir Bilal Akhtar",
+    isPeriodTeacher: false,
     day: "Fri",
     startTime: "13:00",
     endTime: "14:30",
@@ -564,6 +598,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "CS-301",
     courseTitle: "Data Structures and Algorithms",
     instructor: "Dr. Sana Qureshi",
+    classTeacher: "Dr. Sana Qureshi",
+    isPeriodTeacher: false,
     day: "Mon",
     startTime: "11:00",
     endTime: "12:00",
@@ -575,6 +611,8 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "CS-340",
     courseTitle: "Database Systems",
     instructor: "Sir Bilal Akhtar",
+    classTeacher: "Sir Bilal Akhtar",
+    isPeriodTeacher: false,
     day: "Wed",
     startTime: "09:00",
     endTime: "10:30",
@@ -586,17 +624,21 @@ export const scheduleSlots: ReadonlyArray<ScheduleSlot> = [
     courseCode: "MTH-204",
     courseTitle: "Linear Algebra",
     instructor: "Dr. Imran Siddiqui",
-    day: "Thu",
-    startTime: "15:00",
-    endTime: "16:00",
-    room: "Room CS-204",
+    classTeacher: "Dr. Imran Siddiqui",
+    isPeriodTeacher: false,
+    day: "Mon",
+    startTime: "13:00",
+    endTime: "14:00",
+    room: "Room CS-208",
     mode: "in_person",
   },
   {
     id: "sc-09",
     courseCode: "CS-318",
     courseTitle: "Web Engineering II",
-    instructor: "Sir Hammad Raza",
+    instructor: "Ms. Ayesha Khalid",
+    classTeacher: "Sir Hammad Raza",
+    isPeriodTeacher: true,
     day: "Thu",
     startTime: "15:00",
     endTime: "17:00",
@@ -676,5 +718,47 @@ export const messageThreads: ReadonlyArray<MessageThread> = [
       "Saturday review session locked in at 17:00. Bringing the printed cheatsheet for everyone.",
     updatedAt: "4 days ago",
     unread: 0,
+  },
+];
+
+// --- Schedule page (teacher reviews)
+//
+// Seed reviews so the demo state is non-empty on first render. New reviews
+// created from the ScheduleReviews form land alongside these via local state
+// in the client island (no DB yet).
+export const teacherReviews: ReadonlyArray<TeacherReview> = [
+  {
+    id: "rv-01",
+    kind: "class_teacher",
+    courseCode: "CS-301",
+    teacherName: "Dr. Sana Qureshi",
+    rating: 5,
+    comment:
+      "Office hours always start on time and she remembers where we left off last week. Grading turnaround is two business days.",
+    anonymous: false,
+    submittedAt: "3 days ago",
+  },
+  {
+    id: "rv-02",
+    kind: "period_teacher",
+    courseCode: "CS-318",
+    slotId: "sc-09",
+    teacherName: "Ms. Ayesha Khalid",
+    rating: 4,
+    comment:
+      "Picked up Hammad's lecture plan cleanly. Brought a worked example for closures that unlocked the quiz for me. Audio cut around 16:20, worth a note for next time.",
+    anonymous: true,
+    submittedAt: "yesterday",
+  },
+  {
+    id: "rv-03",
+    kind: "class_teacher",
+    courseCode: "MTH-204",
+    teacherName: "Dr. Imran Siddiqui",
+    rating: 3,
+    comment:
+      "Concepts are clear but the pace in week 9 jumped. Posting the worked solutions before the recorded lecture would help.",
+    anonymous: false,
+    submittedAt: "5 days ago",
   },
 ];

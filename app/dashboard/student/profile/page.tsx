@@ -95,7 +95,8 @@ const ProfilePage = () => {
           </CardTitle>
           <p className="text-xs text-muted-foreground">
             You control which lines are visible to instructors and the cohort
-            directory.
+            directory. The visibility column below is a demo snapshot — once
+            preferences land in Settings, the badges will reflect live state.
           </p>
         </CardHeader>
         <CardContent className="px-0 pb-0">

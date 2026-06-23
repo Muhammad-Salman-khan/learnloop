@@ -25,8 +25,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { profileSchema, type ProfileFormValues } from "@/lib/settings/profile-schema";
+import {
+  profileSchema,
+  type ProfileFormValues,
+} from "@/lib/settings/profile-schema";
 import { profileDefaults } from "@/lib/settings/settings-data";
+import { toFieldErrorItems } from "@/lib/settings/field-errors";
 
 // Client Component. Form state lives in @tanstack/react-form; zod schema is
 // mounted as the onChange validator so errors surface field-by-field. Submit
@@ -132,9 +136,9 @@ export function SettingsProfile() {
                     aria-invalid={Boolean(field.state.meta.errors.length)}
                     required
                   />
-                  <FieldError>
-                    {field.state.meta.errors[0]?.toString()}
-                  </FieldError>
+                  <FieldError
+                    errors={toFieldErrorItems(field.state.meta.errors)}
+                  />
                 </FieldContent>
               </Field>
             )}
@@ -157,9 +161,9 @@ export function SettingsProfile() {
                     aria-invalid={Boolean(field.state.meta.errors.length)}
                     required
                   />
-                  <FieldError>
-                    {field.state.meta.errors[0]?.toString()}
-                  </FieldError>
+                  <FieldError
+                    errors={toFieldErrorItems(field.state.meta.errors)}
+                  />
                 </FieldContent>
               </Field>
             )}
@@ -184,9 +188,9 @@ export function SettingsProfile() {
                     Shown in the header and cohort directory instead of your
                     full name. Leave blank to use your first name.
                   </FieldDescription>
-                  <FieldError>
-                    {field.state.meta.errors[0]?.toString()}
-                  </FieldError>
+                  <FieldError
+                    errors={toFieldErrorItems(field.state.meta.errors)}
+                  />
                 </FieldContent>
               </Field>
             )}
@@ -210,9 +214,9 @@ export function SettingsProfile() {
                   <FieldDescription>
                     Used only for SMS reminders and registrar outreach.
                   </FieldDescription>
-                  <FieldError>
-                    {field.state.meta.errors[0]?.toString()}
-                  </FieldError>
+                  <FieldError
+                    errors={toFieldErrorItems(field.state.meta.errors)}
+                  />
                 </FieldContent>
               </Field>
             )}
@@ -309,9 +313,9 @@ export function SettingsProfile() {
                     onChange={(e) => field.handleChange(Number(e.target.value))}
                     aria-invalid={Boolean(field.state.meta.errors.length)}
                   />
-                  <FieldError>
-                    {field.state.meta.errors[0]?.toString()}
-                  </FieldError>
+                  <FieldError
+                    errors={toFieldErrorItems(field.state.meta.errors)}
+                  />
                 </FieldContent>
               </Field>
             )}
@@ -348,9 +352,9 @@ export function SettingsProfile() {
                   {field.state.value.length}/280
                 </span>
               </div>
-              <FieldError>
-                {field.state.meta.errors[0]?.toString()}
-              </FieldError>
+              <FieldError
+                errors={toFieldErrorItems(field.state.meta.errors)}
+              />
             </FieldContent>
           </Field>
         )}

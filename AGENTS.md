@@ -32,6 +32,15 @@ These are non-negotiable. Every deviation is a mistake. No exceptions.
 - Custom components only permitted when shadcn has nothing that fits. Document why when that happens.
 - Always import from `@/components/ui/...`. Style is `radix-nova`. Custom theme lives in `app/globals.css` (ÉclairCode neo-brutalist design system).
 
+**Forms — TanStack Form is the rule**
+
+- The form library for this project is **`@tanstack/react-form`** (already installed). Every Client Component that owns form state MUST use it.
+- Do NOT pull in `react-hook-form`, `formik`, `react-final-form`, or any other form library. Do NOT hand-roll forms with `useState` + manual `errors` + manual `setErrors` patterns. TanStack Form is mandatory.
+- Wire validation by mounting zod schemas as TanStack Form validators — `onChange`, `onBlur`, and `onSubmit` slots in `useForm({ validators: {...} })`. Field-level errors come from `field.state.meta.errors[0]`; form-level errors from `form.Subscribe selector={(s) => s.errors}`.
+- Layout primitive for every form field is the shadcn `Field` family (`Field`, `FieldGroup`, `FieldLabel`, `FieldContent`, `FieldDescription`, `FieldError`) imported from `@/components/ui/field`. Pair it with TanStack's `<form.Field name="...">{(field) => ...}</form.Field>` render-prop, not the shadcn `/components/ui/form.tsx` Form/Controller stack (that stack will arrive if/when we add react-hook-form).
+- For tables of form controls (toggles, switches), bind each cell to a nested `form.Field` path (e.g. `"events.email"`). Set subscribed state once via `useStore(form.store, selector)` for derived rollups.
+- Zod v4 note: `z.coerce.number()` is typed as `unknown` to validators, which breaks TanStack's `StandardSchemaV1` shape check. Coerce to `number` at the form boundary (`Number(e.target.value)` in the input's `onChange`) and keep the schema on `z.number()`.
+
 **Separation of concerns**
 
 - Components are responsible for **one thing**: turning data into markup.

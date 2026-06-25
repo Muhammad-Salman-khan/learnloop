@@ -33,7 +33,9 @@ model User {
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
-
+  student       Student?
+  teacher       Teacher?
+  staff         Staff?
   @@unique([email])
   @@map("user")
 }
@@ -86,3 +88,55 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model Student {
+  id String @id
+  user    User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  rollNumber   String?  @unique
+  class        String
+  enrollment_Date DateTime @default(now())
+  fees    Boolean?
+  fatherName String?
+  motherName String?
+  section   String?
+  dob   DateTime
+  phoneNumber String?
+  parentPhone String?
+  address String?
+  bio String?
+@@map("student")
+}
+model Teacher {
+  id String @id
+  user    User   @relation(fields: [id], references: [id], onDelete: Cascade)
+  employmentId   String?  @unique
+  nic    String? @unique
+  hireDate     DateTime  @default(now())
+  assgin_class    String?
+  subjectProficiency Json?
+  section   String?
+  dob   DateTime
+  phoneNumber String?
+  address String?
+  bio String?
+  isActive      Boolean   @default(true)
+@@map("teacher")
+}
+model Staff {
+  id String @id
+  user    User   @relation(fields: [id], references: [id], onDelete: Cascade)
+  employmentId   String?  @unique
+  nic    String? @unique
+  hireDate     DateTime  @default(now())
+  dob   DateTime?
+  department   String?
+  designation  String?
+  phoneNumber String?
+  address String?
+  bio String?
+  isActive      Boolean   @default(true)
+
+@@map("staff")
+}
+
+

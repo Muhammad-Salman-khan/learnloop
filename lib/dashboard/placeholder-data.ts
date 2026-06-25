@@ -183,4 +183,129 @@ export const placeholderSpecs: Readonly<Record<string, PlaceholderSpec>> = {
       },
     ],
   },
+  // ------------------------------------------------------------------
+  // Teacher workspace — separate namespace so the existing student
+  // entries above stay untouched. The page lookup prepends "teacher-"
+  // to the key on the teacher side.
+  // ------------------------------------------------------------------
+  "teacher-quizzes": {
+    eyebrow: "Workspace",
+    title: "Quizzes",
+    description:
+      "Author, schedule, and grade quizzes across every course you teach. Built for both formative weekly checks and summative midterms, with section-level analytics.",
+    items: [
+      {
+        title: "Quiz library",
+        detail: "All quizzes you have authored, grouped by course, with status (draft, scheduled, closed) and last edit date.",
+      },
+      {
+        title: "Authoring studio",
+        detail: "Compose MCQ, true/false, and short-answer blocks, attach source pages from course material, and set difficulty mix.",
+      },
+      {
+        title: "Schedule and windows",
+        detail: "Pick an open/close window per cohort, set retake rules, and lock the quiz once the window has started.",
+      },
+      {
+        title: "Cohort analytics",
+        detail: "Per-question difficulty and discrimination, time spent, and a list of students who need follow-up support.",
+      },
+    ],
+  },
+  "teacher-schedule": {
+    eyebrow: "Workspace",
+    title: "Schedule",
+    description:
+      "Your teaching week: live lectures, office hours, lab slots, and invigilation duty. Switch between term and weekly view, and slot new sessions without conflicting with existing ones.",
+    items: [
+      {
+        title: "Weekly timetable",
+        detail: "Day-by-hour grid showing every class, lab, and tutorial you teach this term, with room and cohort.",
+      },
+      {
+        title: "Office hours",
+        detail: "Recurring slots students can book, with an intake form so you know what they want to discuss in advance.",
+      },
+      {
+        title: "Conflict warnings",
+        detail: "Flag overlapping sessions, room double-bookings, and invigilation duty that collides with a lecture.",
+      },
+      {
+        title: "Calendar export",
+        detail: "One-click iCal or Google Calendar subscribe so your teaching week follows you to phone and laptop.",
+      },
+    ],
+  },
+  "teacher-ai-tools": {
+    eyebrow: "Tools",
+    title: "AI teaching tools",
+    description:
+      "Course-aware assistants for drafting quizzes, summarising submissions, and explaining weak concepts. Every tool is scoped to material inside your own courses, never the open web.",
+    items: [
+      {
+        title: "Quiz generator",
+        detail: "Generate MCQ, true/false, and short-answer blocks from any PDF or lecture transcript already attached to a course.",
+      },
+      {
+        title: "Submission summariser",
+        detail: "Cluster a cohort's open-text submissions into themes with cited quotes, so patterns surface without reading 200 files.",
+      },
+      {
+        title: "Concept explainer",
+        detail: "Draft a clearer explanation of any slide, grounded in your own lecture notes and the textbook sections you assigned.",
+      },
+      {
+        title: "Rubric drafter",
+        detail: "Turn a one-line assignment prompt into a weighted rubric with level descriptors, ready to publish with the assignment.",
+      },
+    ],
+  },
+  "teacher-notifications": {
+    eyebrow: "Workspace",
+    title: "Notifications",
+    description:
+      "Everything that needs your attention: late submissions, messages from students, quiz windows closing, and grading queue reminders. Configurable per channel and per priority.",
+    items: [
+      {
+        title: "Inbox",
+        detail: "Unread items pinned to the top, with course code, sender, and the action they are waiting on.",
+      },
+      {
+        title: "Channel routing",
+        detail: "Route each notification class to in-app, email, or SMS, with quiet hours so evenings stay quiet.",
+      },
+      {
+        title: "Priority rules",
+        detail: "Lift urgent items (late submissions, system alerts) above low-priority announcements and digest the rest.",
+      },
+      {
+        title: "Bulk resolve",
+        detail: "Mark all read, archive by course, or mute a thread for a week without losing the underlying record.",
+      },
+    ],
+  },
+  "teacher-profile": {
+    eyebrow: "Account",
+    title: "Teacher profile",
+    description:
+      "Your public profile as seen by students and the school directory. Edit your bio, office hours, contact channels, and which fields students can see.",
+    items: [
+      {
+        title: "Identity card",
+        detail: "Name, title, department, photo, and a one-line teaching philosophy.",
+      },
+      {
+        title: "Office hours and room",
+        detail: "Recurring weekly slots with room number, plus a standing note on how students should book.",
+      },
+      {
+        title: "Courses taught",
+        detail: "Auto-listed from your active courses with a toggle for which ones show on your public profile.",
+      },
+      {
+        title: "Contact preferences",
+        detail: "Decide how students can reach you — messages, email, or both — and which fields appear in the directory.",
+      },
+    ],
+  },
 };

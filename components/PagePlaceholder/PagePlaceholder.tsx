@@ -13,6 +13,11 @@ type PagePlaceholderProps = {
   readonly title: string;
   readonly description: string;
   readonly items: ReadonlyArray<PlaceholderItem>;
+  // Where the "Back to overview" link points. Each dashboard section has its
+  // own root, so the page supplies it. Defaults to /dashboard/student to keep
+  // every existing call site working.
+  readonly backHref?: string;
+  readonly backLabel?: string;
 };
 
 // Editorial skeleton for future client pages. The page exists, the URL
@@ -23,7 +28,15 @@ export function PagePlaceholder({
   title,
   description,
   items,
+  backHref,
+  backLabel,
 }: PagePlaceholderProps) {
+  const overviewHref = backHref ?? "/dashboard/student";
+  const overviewLabel = backLabel ?? "Back to overview";
+  // Section key derived from the back-href so the footer sentence names the
+  // right overview URL without each page having to pass another prop.
+  const sectionName = overviewHref.split("/").filter(Boolean).pop() ?? "student";
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-14 md:px-8 md:py-20">
       <Button
@@ -32,9 +45,9 @@ export function PagePlaceholder({
         size="sm"
         className="mb-8 -ml-2 gap-2 text-muted-foreground hover:text-foreground"
       >
-        <Link href="/dashboard/student">
+        <Link href={overviewHref}>
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          Back to overview
+          {overviewLabel}
         </Link>
       </Button>
 
@@ -75,12 +88,13 @@ export function PagePlaceholder({
       <p className="mt-8 max-w-[60ch] text-xs leading-relaxed text-muted-foreground">
         This page is part of the Smart Hub layout. The overview at{" "}
         <Link
-          href="/dashboard/student"
+          href={overviewHref}
           className="font-medium text-foreground/80 underline-offset-4 hover:underline"
         >
-          /dashboard/student
+          {overviewHref}
         </Link>{" "}
-        holds the live demo with sample charts, courses, and schedule data.
+        holds the live demo with sample charts, courses, and schedule data for
+        the {sectionName} workspace.
       </p>
     </div>
   );

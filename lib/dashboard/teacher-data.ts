@@ -1287,3 +1287,252 @@ export const upcomingTeaching: ReadonlyArray<UpcomingTeachingEvent> = [
     href: "/dashboard/teacher/courses/c-ts-bootcamp/assignments/a-3",
   },
 ];
+
+
+// ---------- Gradebook (per-course, row=student × col=assignment) ----------
+
+// One cell in the gradebook matrix.
+export type GradebookCellStatus = "pending" | "submitted" | "late" | "graded";
+export type GradebookCell = {
+  readonly assignmentId: string;
+  readonly status: GradebookCellStatus;
+  // null when not graded yet. 0.0..100 weighted percentage.
+  readonly score: number | null;
+  readonly feedback: string | null;
+  readonly gradedAt: string | null;
+};
+
+// One row = one student. Aggregated totals computed at render time.
+export type GradebookRow = {
+  readonly studentId: string;
+  readonly studentName: string;
+  readonly initials: string;
+  readonly email: string;
+  readonly feeStatus: "paid" | "pending" | "overdue" | "scholarship";
+  readonly enrolledAt: string;
+  // Weighted total across graded cells. null until at least one cell graded.
+  readonly weightedTotal: number | null;
+  readonly letterGrade: string | null;
+  readonly cells: ReadonlyArray<GradebookCell>;
+};
+
+// Per-course gradebook lookup. Only c-ts-bootcamp ships a hand-curated
+// aggregate since every other course uses the synthetic builder below.
+export const gradebookByCourse: Record<string, ReadonlyArray<GradebookRow>> = {
+  "c-ts-bootcamp": [
+    {
+      studentId: "s-1",
+      studentName: "Ayesha Siddiqui",
+      initials: "AS",
+      email: "ayesha.s@learnhub.io",
+      feeStatus: "paid",
+      enrolledAt: isoDaysAgo(110),
+      weightedTotal: 84.2,
+      letterGrade: "A-",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 88, feedback: "Solid narrowing walkthrough.", gradedAt: isoDaysAgo(40) },
+        { assignmentId: "a-2", status: "graded", score: 92, feedback: null, gradedAt: isoDaysAgo(20) },
+        { assignmentId: "a-3", status: "graded", score: 78, feedback: "Watch the conditional-type precedence.", gradedAt: isoDaysAgo(10) },
+        { assignmentId: "a-4", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-2",
+      studentName: "Hassan Raza",
+      initials: "HR",
+      email: "hassan.r@learnhub.io",
+      feeStatus: "paid",
+      enrolledAt: isoDaysAgo(110),
+      weightedTotal: 71.5,
+      letterGrade: "B-",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 74, feedback: null, gradedAt: isoDaysAgo(38) },
+        { assignmentId: "a-2", status: "graded", score: 69, feedback: "Re-read section 2 on discriminated unions.", gradedAt: isoDaysAgo(19) },
+        { assignmentId: "a-3", status: "late", score: 65, feedback: null, gradedAt: isoDaysAgo(8) },
+        { assignmentId: "a-4", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-3",
+      studentName: "Maira Khan",
+      initials: "MK",
+      email: "maira.k@learnhub.io",
+      feeStatus: "scholarship",
+      enrolledAt: isoDaysAgo(105),
+      weightedTotal: 91.8,
+      letterGrade: "A",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 95, feedback: null, gradedAt: isoDaysAgo(40) },
+        { assignmentId: "a-2", status: "graded", score: 94, feedback: "Excellent citations.", gradedAt: isoDaysAgo(20) },
+        { assignmentId: "a-3", status: "graded", score: 89, feedback: null, gradedAt: isoDaysAgo(11) },
+        { assignmentId: "a-4", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-4",
+      studentName: "Bilal Ahmed",
+      initials: "BA",
+      email: "bilal.a@learnhub.io",
+      feeStatus: "pending",
+      enrolledAt: isoDaysAgo(95),
+      weightedTotal: 58.0,
+      letterGrade: "C",
+      cells: [
+        { assignmentId: "a-1", status: "late", score: 52, feedback: "Late. Re-submit when ready.", gradedAt: isoDaysAgo(35) },
+        { assignmentId: "a-2", status: "graded", score: 60, feedback: null, gradedAt: isoDaysAgo(18) },
+        { assignmentId: "a-3", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-4", status: "pending", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-5",
+      studentName: "Zoya Imran",
+      initials: "ZI",
+      email: "zoya.i@learnhub.io",
+      feeStatus: "paid",
+      enrolledAt: isoDaysAgo(98),
+      weightedTotal: 76.5,
+      letterGrade: "B",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 80, feedback: null, gradedAt: isoDaysAgo(40) },
+        { assignmentId: "a-2", status: "graded", score: 72, feedback: null, gradedAt: isoDaysAgo(20) },
+        { assignmentId: "a-3", status: "graded", score: 78, feedback: "Good structure. Add more tests.", gradedAt: isoDaysAgo(10) },
+        { assignmentId: "a-4", status: "graded", score: 76, feedback: null, gradedAt: isoDaysAgo(3) },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-6",
+      studentName: "Talha Yousuf",
+      initials: "TY",
+      email: "talha.y@learnhub.io",
+      feeStatus: "overdue",
+      enrolledAt: isoDaysAgo(100),
+      weightedTotal: 64.2,
+      letterGrade: "C+",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 66, feedback: null, gradedAt: isoDaysAgo(38) },
+        { assignmentId: "a-2", status: "late", score: 58, feedback: null, gradedAt: isoDaysAgo(17) },
+        { assignmentId: "a-3", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-4", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-7",
+      studentName: "Iqra Fatima",
+      initials: "IF",
+      email: "iqra.f@learnhub.io",
+      feeStatus: "paid",
+      enrolledAt: isoDaysAgo(108),
+      weightedTotal: 87.5,
+      letterGrade: "A-",
+      cells: [
+        { assignmentId: "a-1", status: "graded", score: 90, feedback: null, gradedAt: isoDaysAgo(40) },
+        { assignmentId: "a-2", status: "graded", score: 88, feedback: null, gradedAt: isoDaysAgo(20) },
+        { assignmentId: "a-3", status: "graded", score: 86, feedback: null, gradedAt: isoDaysAgo(10) },
+        { assignmentId: "a-4", status: "submitted", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+    {
+      studentId: "s-8",
+      studentName: "Saad Mehmood",
+      initials: "SM",
+      email: "saad.m@learnhub.io",
+      feeStatus: "paid",
+      enrolledAt: isoDaysAgo(112),
+      weightedTotal: null,
+      letterGrade: null,
+      cells: [
+        { assignmentId: "a-1", status: "late", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-2", status: "pending", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-3", status: "pending", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-4", status: "pending", score: null, feedback: null, gradedAt: null },
+        { assignmentId: "a-5", status: "pending", score: null, feedback: null, gradedAt: null },
+      ],
+    },
+  ],
+  // Other courses get a synthetic aggregate via buildSyntheticGradebook so
+  // the matrix always renders even where we have not pre-baked rows.
+  "c-next-mastery": [],
+  "c-postgres-foundations": [],
+  "c-system-design-101": [],
+  "c-docker-primer": [],
+};
+
+// Build the gradebook by composing studentsByCourse (roster) and
+// submissionsByAssignment (graded work) for any course without pre-baked
+// fixtures. Real DB-backed build will replace this with a join. The product
+// score on the table is derived here, not in the page, so the page only
+// renders rows.
+export function buildSyntheticGradebook(
+  courseId: string
+): ReadonlyArray<GradebookRow> {
+  const students = studentsByCourse[courseId] ?? [];
+  const assignments = assignmentsByCourse[courseId] ?? [];
+  return students.map((s) => {
+    const gradedSubs = assignments.flatMap(
+      (a) => submissionsByAssignment[a.id] ?? [],
+    );
+    const scored = gradedSubs.filter(
+      (sub) => sub.studentId === s.id && sub.score !== null,
+    );
+    const weightedTotal =
+      scored.length === 0
+        ? null
+        : Math.round(
+            (scored.reduce((sum, sub) => sum + (sub.score ?? 0), 0) /
+              scored.length) *
+              10,
+          ) / 10;
+    const letterGrade =
+      weightedTotal === null ? null : letterFromScore(weightedTotal);
+    return {
+      studentId: s.id,
+      studentName: s.name,
+      initials: s.initials,
+      email: s.email,
+      feeStatus: s.feeStatus,
+      enrolledAt: s.enrollmentDate,
+      weightedTotal,
+      letterGrade,
+      cells: assignments.map((a) => {
+        const sub = (submissionsByAssignment[a.id] ?? []).find(
+          (row) => row.studentId === s.id,
+        );
+        return {
+          assignmentId: a.id,
+          status: sub ? sub.status : "pending",
+          score: sub?.score ?? null,
+          feedback: sub?.feedback ?? null,
+          gradedAt: sub && sub.status === "graded" ? isoDaysAgo(5) : null,
+        };
+      }),
+    };
+  });
+}
+
+// Public lookup: prefer the pre-baked fixtures, fall back to synthetic.
+export function getGradebookForCourse(
+  courseId: string
+): ReadonlyArray<GradebookRow> {
+  const baked = gradebookByCourse[courseId];
+  return baked && baked.length > 0
+    ? baked
+    : buildSyntheticGradebook(courseId);
+}
+
+// Letter-grade thresholds mirrored by cosmetic logic above; centralised so
+// the cell status badge can reuse the boundary when needed.
+export function letterFromScore(score: number): string {
+  if (score >= 90) return "A";
+  if (score >= 80) return "B";
+  if (score >= 70) return "C";
+  if (score >= 60) return "D";
+  return "F";
+}

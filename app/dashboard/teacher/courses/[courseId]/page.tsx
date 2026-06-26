@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   ClipboardList,
   FileText,
+  GraduationCap,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -72,6 +73,12 @@ const CourseOverviewPage = async ({
             <Link href={`/dashboard/teacher/courses/${courseId}/materials`}>
               <FileText className="size-3.5" aria-hidden="true" />
               Materials
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="gap-2">
+            <Link href={`/dashboard/teacher/courses/${courseId}/gradebook`}>
+              <GraduationCap className="size-3.5" aria-hidden="true" />
+              Gradebook
             </Link>
           </Button>
           <Button asChild className="gap-2">

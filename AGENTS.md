@@ -78,14 +78,20 @@ These are non-negotiable. Every deviation is a mistake. No exceptions.
 
 ## Testing & CI
 
-- No test suite configured. Do not guess or invent test commands.
-- No CI configuration present.
-- `pnpm lint` is the only quality gate.
+- **E2E testing is mandatory for this project.** Tooling: **Playwright** (`@playwright/test`), driven by **Context7** as the primary source for Playwright patterns, fixtures, and Next.js App Router integration. Never guess from training data — fetch from Context7 first.
+- Test runner is **`@playwright/test`**, invoked via `pnpm test:e2e`. Use `pnpm exec playwright …` (never `npx` / `npm exec`).
+- Browsers: **Chromium only** by default (matches the existing msedge QA path). Add `firefox` / `webkit` only if a feature explicitly needs cross-browser coverage.
+- **Auth handling**: seed the NextAuth session cookie into the Playwright browser context via a `global-setup` script that reads from `.env.local` / a fixture user — never bypass `auth.api.getSession()` in app code. The temporary `return <div>` + `redirect("/dashboard/admin")` relax pattern in `app/dashboard/layout.tsx` + `page.tsx` is for puppeteer-core symptom capture only, not Playwright.
+- Test layout: `e2e/` at the project root, one spec file per feature (`e2e/dashboard-admin.spec.ts`, `e2e/auth.spec.ts`, etc.), shared fixtures under `e2e/fixtures/`, helpers under `e2e/utils/`.
+- Quality gates (run in order): `pnpm lint && pnpm test:e2e && pnpm build`.
+- No CI configuration present yet — when CI is added, the E2E suite must run against a freshly seeded test database.
 
 ## Gotchas
 
-- `pnpm build` already runs `prisma generate`. Only run it separately if the schema changed and you need the client rebuilt without a full build.
-- Missing `.env` will crash `pnpm dev` immediately — verify it exists first.
+- `pnpm build` already runs `prisma generate`. Only run it separately if the schema changed and you need the client rebuilt without a full build. **Before `pnpm test:e2e`**, seed the test DB: `pnpm prisma db seed` against the `e2e` schema.
+- Missing `.env` will crash `pnpm dev` immediately — verify it exists first. **`pnpm test:e2e` needs `.env.test` or a `playwright.config.ts` `webServer` block that loads `.env.local`.**
+- `playwright.config.ts` must set `use: { baseURL: 'http://localhost:<port>' }` and start the dev server via `webServer.command = 'pnpm dev'` against a dedicated E2E port (e.g. 3100) so it never collides with the dev port 3000.
+- Install browsers **once per machine**: `pnpm exec playwright install chromium`. Add `--with-deps` on Linux CI runners only.
 - Never use `npx` or `npm` — this project uses pnpm exclusively.
 
 ## Summary
@@ -101,3 +107,4 @@ These are non-negotiable. Every deviation is a mistake. No exceptions.
 | Component scope        | UI only — no business logic, no DB calls, no API logic |
 | File structure         | `components/ComponentName/ComponentName.tsx` — always  |
 | Package manager        | pnpm only — never npm, yarn, bun, or npx               |
+| E2E testing            | Playwright (`@playwright/test`) via Context7, `e2e/`   |

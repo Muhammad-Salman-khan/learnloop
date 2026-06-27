@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   RotateCw,
@@ -48,6 +48,12 @@ import {
   type AdminRole,
 } from "@/lib/admin/admin-data";
 import { initials } from "@/lib/admin/formatters";
+import { usePaginator } from "@/lib/hooks/usePagination";
+import { TablePagination } from "@/components/TablePagination/TablePagination";
+import {
+  MobileCard,
+  MobileCardList,
+} from "@/components/MobileCard/MobileCard";
 
 // Mirror the staff spec: staff is only authorized to switch between
 // student and teacher. Promote/demote from any other role is gated off
@@ -111,6 +117,15 @@ export function StaffRoleSwitcher({ users }: StaffRoleSwitcherProps) {
         effective: overrides[u.id] ?? u.role,
       }));
   }, [users, query, roleFilter, scopeFilter, overrides]);
+
+  const paginator = usePaginator(rows.length, 10);
+
+  useEffect(() => {
+    paginator.goTo(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, roleFilter, scopeFilter, rows.length]);
+
+  const pageRows = paginator.slice(rows);
 
   function attemptChange(userId: string, userName: string, from: AdminRole, to: AdminRole) {
     if (!isManageableForStaff(from) || !isManageableForStaff(to)) {
@@ -197,7 +212,7 @@ export function StaffRoleSwitcher({ users }: StaffRoleSwitcherProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md border bg-card">
+      <div className="hidden overflow-hidden rounded-md border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -208,17 +223,19 @@ export function StaffRoleSwitcher({ users }: StaffRoleSwitcherProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 ? (
+            {pageRows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={4}
                   className="px-5 py-10 text-center text-xs text-muted-foreground"
                 >
-                  No users match these filters.
+                  {rows.length === 0
+                    ? "No users match these filters."
+                    : "Nothing on this page."}
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map(({ user, effective }) => {
+              pageRows.map(({ user, effective }) => {
                 const manageableNow = isManageableForStaff(effective);
                 return (
                   <TableRow key={user.id}>
@@ -280,6 +297,43 @@ export function StaffRoleSwitcher({ users }: StaffRoleSwitcherProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Mobile cards list */}
+      <MobileCardList>
+        {pageRows.length === 0 ? (
+          <div className="rounded-md border bg-card p-6 text-center text-xs text-muted-foreground">
+            {rows.length === 0
+              ? "No users match these filters."
+              : "Nothing on this page."}
+          </div>
+        ) : (
+          pageRows.map(({ user, effective }) => {
+            const manageableNow = isManageableForStaff(effective);
+            return (
+              <MobileCard
+                key={user.id}
+                emphasis={
+                  <Badge variant={roleBadgeVariant(effective)}>
+                    <Shield className="mr-1 size-3" />
+                    {roleLabel(effective)}
+                  </Badge>
+                }
+                fields={[
+                  { label: "Name", value: user.name },
+                  { label: "Email", value: user.email },
+                ]}
+                footer={
+                  manageableNow
+                    ? undefined
+                    : "Out of staff scope — admin console required for this transition"
+                }
+              />
+            );
+          })
+        )}
+      </MobileCardList>
+
+      <TablePagination paginator={paginator} />
 
       <Dialog
         open={confirmOpen}

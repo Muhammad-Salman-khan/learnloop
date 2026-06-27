@@ -1,7 +1,3 @@
-import Link from "next/link";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,26 +5,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { AdminStatStrip } from "@/components/AdminStatStrip/AdminStatStrip";
 
+import { StaffFeesTable } from "@/components/StaffFeesTable/StaffFeesTable";
 import {
   adminStudents,
   adminUsers,
 } from "@/lib/staff/staff-data";
-import { feeStatusLabel } from "@/lib/admin/admin-data";
 import { feeRecords as feeSeed } from "@/lib/staff/staff-data";
-import {
-  formatCurrencyPKR,
-  formatMonthYear,
-} from "@/lib/admin/formatters";
+import { formatCurrencyPKR } from "@/lib/admin/formatters";
 
 const page = () => {
   const rows = adminStudents
@@ -72,8 +57,8 @@ const page = () => {
           Fees overview
         </h1>
         <p className="max-w-[60ch] text-sm text-muted-foreground md:text-base">
-          Master ledger across every student on the platform. Open a row to view
-          the per-student history and update a cycle&apos;s status.
+          Master ledger across every student on the platform. Open a row to
+          view per-student history and update a cycle&apos;s status.
         </p>
       </header>
 
@@ -98,7 +83,7 @@ const page = () => {
             trend: "up",
           },
           {
-            label: "Roll numbers",
+            label: "Students",
             value: String(rows.length),
             hint: "On the ledger",
           },
@@ -111,97 +96,12 @@ const page = () => {
             Per-student ledger
           </CardTitle>
           <CardDescription className="text-xs">
-            Hover a status pill to see the underlying cycles.
+            10 rows per page. Search by name or roll number, filter by fee
+            status.
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-0 pb-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-5">Student</TableHead>
-                <TableHead className="hidden md:table-cell">Last 3 cycles</TableHead>
-                <TableHead className="text-right">Total paid</TableHead>
-                <TableHead className="text-right">Outstanding</TableHead>
-                <TableHead className="text-right">Current</TableHead>
-                <TableHead className="pr-5 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map(({ student, user, monthly, totalPaid, unpaid }) => {
-                const lastThree = [...monthly]
-                  .sort((a, b) =>
-                    a.monthLabel < b.monthLabel ? 1 : -1,
-                  )
-                  .slice(0, 3);
-                return (
-                  <TableRow key={student.userId}>
-                    <TableCell className="pl-5">
-                      <Link
-                        href={`/dashboard/staff/fees/${student.userId}`}
-                        className="font-medium hover:underline"
-                      >
-                        {user.name}
-                      </Link>
-                      <div className="text-xs text-muted-foreground">
-                        {student.rollNumber}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center gap-1">
-                        {lastThree.map((m) => (
-                          <Badge
-                            key={m.id}
-                            variant={
-                              m.status === "paid"
-                                ? "secondary"
-                                : m.status === "due"
-                                  ? "outline"
-                                  : "destructive"
-                            }
-                            className="font-mono text-[10.5px]"
-                            title={`${formatMonthYear(m.monthLabel)} · ${feeStatusLabel(m.status)}`}
-                          >
-                            {formatMonthYear(m.monthLabel).split(" ")[0]}
-                          </Badge>
-                        ))}
-                        {lastThree.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">
-                            —
-                          </span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs tabular-nums">
-                      {formatCurrencyPKR(totalPaid)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs tabular-nums text-muted-foreground">
-                      {unpaid > 0 ? formatCurrencyPKR(unpaid) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge
-                        variant={
-                          student.feeStatus === "paid"
-                            ? "secondary"
-                            : student.feeStatus === "due"
-                              ? "outline"
-                              : "destructive"
-                        }
-                      >
-                        {feeStatusLabel(student.feeStatus)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="pr-5 text-right">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/dashboard/staff/fees/${student.userId}`}>
-                          Manage
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <StaffFeesTable rows={rows} />
         </CardContent>
       </Card>
     </div>

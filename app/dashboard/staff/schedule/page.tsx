@@ -152,6 +152,7 @@ const page = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0 pb-0">
+          <div className="overflow-x-auto md:overflow-x-visible">
           <Table>
             <TableHeader>
               <TableRow>
@@ -211,6 +212,7 @@ const page = () => {
               })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

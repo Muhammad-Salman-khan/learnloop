@@ -23,11 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type {
-  AdminCourse,
-  AdminCourseStatus,
-  AdminUser,
-} from "@/lib/staff/staff-data";
+import type { AdminCourse, AdminUser } from "@/lib/staff/staff-data";
+import type { CourseStatus } from "@/lib/admin/admin-data";
 import { usePaginator } from "@/lib/hooks/usePagination";
 import { TablePagination } from "@/components/TablePagination/TablePagination";
 import {
@@ -50,14 +47,14 @@ type StaffCoursesTableProps = {
   readonly rows: ReadonlyArray<CourseRow>;
 };
 
-const ALL_STATUSES: ReadonlyArray<AdminCourseStatus> = [
+const ALL_STATUSES: ReadonlyArray<CourseStatus> = [
   "draft",
   "live",
   "archived",
 ];
 
 function statusVariant(
-  status: AdminCourseStatus,
+  status: CourseStatus,
 ): "secondary" | "outline" | "ghost" {
   if (status === "live") return "secondary";
   if (status === "draft") return "outline";
@@ -66,7 +63,7 @@ function statusVariant(
 
 export function StaffCoursesTable({ rows }: StaffCoursesTableProps) {
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<AdminCourseStatus | "all">("all");
+  const [status, setStatus] = useState<CourseStatus | "all">("all");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -108,7 +105,7 @@ export function StaffCoursesTable({ rows }: StaffCoursesTableProps) {
         <div className="flex flex-wrap items-center gap-2">
           <Select
             value={status}
-            onValueChange={(v) => setStatus(v as AdminCourseStatus | "all")}
+            onValueChange={(v) => setStatus(v as CourseStatus | "all")}
           >
             <SelectTrigger className="h-9 w-44">
               <SelectValue />

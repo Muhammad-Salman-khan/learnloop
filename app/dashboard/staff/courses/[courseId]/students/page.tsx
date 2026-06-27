@@ -2,8 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,28 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
+import { StaffCourseRosterTable } from "@/components/StaffCourseRosterTable/StaffCourseRosterTable";
 import {
   adminEnrollments,
   findCourse,
   findStudent,
   findUser,
 } from "@/lib/staff/staff-data";
-import {
-  feeStatusLabel,
-} from "@/lib/admin/admin-data";
-import {
-  formatDateLong,
-  initials,
-} from "@/lib/admin/formatters";
+import { formatDateLong } from "@/lib/admin/formatters";
 
 type Params = Promise<{ courseId: string }>;
 
@@ -91,98 +76,11 @@ const page = async ({ params }: { params: Params }) => {
             Course roster
           </CardTitle>
           <CardDescription className="text-xs">
-            Sorted by enrollment date.
+            Search by name or filter by fee status. Paginates 10 rows per page.
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-0 pb-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-5">Student</TableHead>
-                <TableHead className="hidden md:table-cell">Roll</TableHead>
-                <TableHead className="hidden md:table-cell">Section</TableHead>
-                <TableHead className="hidden md:table-cell">Fee</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Enrolled on
-                </TableHead>
-                <TableHead className="text-right">Progress</TableHead>
-                <TableHead className="pr-5 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="px-5 py-10 text-center text-xs text-muted-foreground"
-                  >
-                    No students enrolled yet.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rows.map((row) => (
-                  <TableRow key={row.enrollment.id}>
-                    <TableCell className="pl-5">
-                      <Link
-                        href={`/dashboard/staff/students/${row.user.id}`}
-                        className="flex items-center gap-3 hover:underline"
-                      >
-                        <Avatar className="size-8 rounded-md">
-                          <AvatarFallback className="rounded-md bg-primary text-[11px] text-primary-foreground">
-                            {initials(row.user.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-0.5 leading-tight">
-                          <span className="text-sm font-medium">
-                            {row.user.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {row.user.email}
-                          </span>
-                        </div>
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden font-mono text-xs tabular-nums text-muted-foreground md:table-cell">
-                      {row.student.rollNumber}
-                    </TableCell>
-                    <TableCell className="hidden text-xs md:table-cell">
-                      Sec {row.student.section}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge
-                        variant={
-                          row.student.feeStatus === "paid"
-                            ? "secondary"
-                            : row.student.feeStatus === "due"
-                              ? "outline"
-                              : "destructive"
-                        }
-                      >
-                        {feeStatusLabel(row.student.feeStatus)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
-                      {formatDateLong(row.enrollment.enrolledAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="secondary" className="font-mono">
-                        {row.enrollment.progressPct}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="pr-5 text-right">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link
-                          href={`/dashboard/staff/students/${row.user.id}/results`}
-                        >
-                          View results
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <StaffCourseRosterTable rows={rows} />
         </CardContent>
       </Card>
     </div>

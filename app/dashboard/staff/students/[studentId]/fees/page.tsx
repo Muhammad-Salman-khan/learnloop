@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import {
-  FEE_STATUSES,
-  feeStatusLabel,
-} from "@/lib/admin/admin-data";
+import { StaffStudentFeesList } from "@/components/StaffStudentFeesList/StaffStudentFeesList";
 import {
   feeRecords as feeSeed,
   findStudent,
   findUser,
 } from "@/lib/staff/staff-data";
 import {
+  FEE_STATUSES,
+  feeStatusLabel,
+} from "@/lib/admin/admin-data";
+import {
   formatCurrencyPKR,
-  formatMonthYear,
-  relativeTime,
 } from "@/lib/admin/formatters";
 
 type Params = Promise<{ studentId: string }>;
@@ -74,13 +73,12 @@ const page = async ({ params }: { params: Params }) => {
           <Link href={`/dashboard/staff/fees/${studentId}`}>
             <Wallet className="mr-1.5 size-3.5" />
             Update fees
-            <ArrowRight className="ml-1.5 size-3.5" />
           </Link>
         </Button>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="md:col-span-1">
           <CardHeader>
             <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
               Current status
@@ -88,17 +86,20 @@ const page = async ({ params }: { params: Params }) => {
             <CardTitle className="mt-1 font-display text-lg font-medium">
               {feeStatusLabel(student.feeStatus)}
             </CardTitle>
+            <CardDescription className="text-xs">
+              {FEE_STATUSES.length} statuses tracked.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              {FEE_STATUSES.map((status) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {FEE_STATUSES.map((s) => (
                 <Badge
-                  key={status}
+                  key={s}
                   variant={
-                    student.feeStatus === status ? "default" : "outline"
+                    student.feeStatus === s ? "default" : "outline"
                   }
                 >
-                  {feeStatusLabel(status)}
+                  {feeStatusLabel(s)}
                 </Badge>
               ))}
             </div>
@@ -140,54 +141,18 @@ const page = async ({ params }: { params: Params }) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-lg font-medium">
-            Monthly history
+            Per-cycle history
           </CardTitle>
           <CardDescription className="text-xs">
-            Newest cycle first.
+            Search cycles, filter by status. Mobile: stacked cards; desktop:
+            shadcn table with pagination.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y">
-            {rows.length === 0 ? (
-              <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                No fee cycles recorded.
-              </li>
-            ) : (
-              rows.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex items-center justify-between gap-3 px-6 py-3"
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                      {formatMonthYear(r.monthLabel)}
-                    </span>
-                    <span className="font-mono text-sm">
-                      {formatCurrencyPKR(r.amount)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        r.status === "paid"
-                          ? "secondary"
-                          : r.status === "due"
-                            ? "outline"
-                            : "destructive"
-                      }
-                    >
-                      {feeStatusLabel(r.status)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {r.paidOn
-                        ? `paid ${relativeTime(r.paidOn)}`
-                        : `updated ${relativeTime(r.updatedAt)}`}
-                    </span>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
+        <CardContent>
+          <StaffStudentFeesList
+            records={rows}
+            currentStatus={student.feeStatus}
+          />
         </CardContent>
       </Card>
     </div>

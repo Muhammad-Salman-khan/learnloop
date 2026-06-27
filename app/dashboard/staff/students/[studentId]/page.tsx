@@ -26,6 +26,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
+import { StaffStudentEnrollmentsList } from "@/components/StaffStudentEnrollmentsList/StaffStudentEnrollmentsList";
+import { StaffStudentResultsList } from "@/components/StaffStudentResultsList/StaffStudentResultsList";
+import { StaffStudentFeesList } from "@/components/StaffStudentFeesList/StaffStudentFeesList";
 import {
   adminEnrollments,
   findCourse,
@@ -43,7 +46,6 @@ import {
 import {
   formatDateLong,
   initials,
-  relativeTime,
 } from "@/lib/admin/formatters";
 
 type Params = Promise<{ studentId: string }>;
@@ -252,53 +254,13 @@ const page = async ({ params }: { params: Params }) => {
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="p-0">
-              <ul className="divide-y">
-                {enrolledCourses.length === 0 ? (
-                  <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                    No current enrollments.
-                  </li>
-                ) : (
-                  enrolledCourses.map(({ enrollment, course }) => {
-                    if (!course) return null;
-                    const teacher = findUser(course.teacherUserId);
-                    return (
-                      <li
-                        key={enrollment.id}
-                        className="flex flex-col gap-2 px-6 py-3 md:flex-row md:items-center md:justify-between"
-                      >
-                        <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
-                          <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                            {course.code}
-                          </span>
-                          <Link
-                            href={`/dashboard/staff/courses/${course.id}`}
-                            className="text-sm font-medium hover:underline"
-                          >
-                            {course.title}
-                          </Link>
-                          <span className="text-xs text-muted-foreground">
-                            {teacher?.name ?? "TBA"} · enrolled{" "}
-                            {formatDateLong(enrollment.enrolledAt)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Badge variant="secondary" className="font-mono">
-                            {enrollment.progressPct}%
-                          </Badge>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link
-                              href={`/dashboard/staff/courses/${course.id}`}
-                            >
-                              Open
-                            </Link>
-                          </Button>
-                        </div>
-                      </li>
-                    );
-                  })
-                )}
-              </ul>
+            <CardContent className="px-4 md:px-5">
+              <StaffStudentEnrollmentsList
+                rows={enrolledCourses.map(({ enrollment, course }) => ({
+                  enrollment,
+                  course: course ?? null,
+                }))}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -322,57 +284,14 @@ const page = async ({ params }: { params: Params }) => {
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="p-0">
-              <ul className="divide-y">
-                {studentResults.length === 0 ? (
-                  <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                    No results on file yet.
-                  </li>
-                ) : (
-                  [...studentResults]
-                    .sort((a, b) =>
-                      a.submittedOn < b.submittedOn ? 1 : -1,
-                    )
-                    .map((r) => {
-                      const course = findCourse(r.courseId);
-                      const grader = findUser(r.gradedByUserId);
-                      const pct = r.maxScore > 0 ? (r.score / r.maxScore) * 100 : 0;
-                      return (
-                        <li
-                          key={r.id}
-                          className="flex flex-col gap-2 px-6 py-3 md:flex-row md:items-center md:justify-between"
-                        >
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-3">
-                              <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                                {course?.code ?? r.courseId}
-                              </span>
-                              <Badge variant="outline" className="h-5 text-[10.5px]">
-                                {r.kind.toUpperCase()}
-                              </Badge>
-                            </div>
-                            <span className="text-sm font-medium">
-                              {r.title}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {course?.title ?? "Course"} · graded by{" "}
-                              {grader?.name ?? "—"} ·{" "}
-                              {formatDateLong(r.submittedOn)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="font-mono">
-                              {pct.toFixed(0)}%
-                            </Badge>
-                            <span className="font-mono text-xs text-muted-foreground">
-                              {r.score}/{r.maxScore}
-                            </span>
-                          </div>
-                        </li>
-                      );
-                    })
-                )}
-              </ul>
+            <CardContent className="px-4 md:px-5">
+              <StaffStudentResultsList
+                rows={studentResults.map((r) => ({
+                  result: r,
+                  course: findCourse(r.courseId),
+                  grader: findUser(r.gradedByUserId),
+                }))}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -385,8 +304,7 @@ const page = async ({ params }: { params: Params }) => {
                   Fee history
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Three latest cycles are visible by default — open the ledger
-                  for the full history.
+                  Search cycles or filter by status — 10 per page.
                 </CardDescription>
               </div>
               <Button variant="ghost" size="sm" asChild>
@@ -396,52 +314,13 @@ const page = async ({ params }: { params: Params }) => {
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent className="p-0">
-              <ul className="divide-y">
-                {feeRows.length === 0 ? (
-                  <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                    No fee records yet.
-                  </li>
-                ) : (
-                  feeRows.map((r) => (
-                    <li
-                      key={r.id}
-                      className="flex items-center justify-between gap-3 px-6 py-3"
-                    >
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                          {r.monthLabel}
-                        </span>
-                        <span className="font-mono text-sm">
-                          PKR {r.amount.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            r.status === "paid"
-                              ? "secondary"
-                              : r.status === "due"
-                                ? "outline"
-                                : "destructive"
-                          }
-                        >
-                          {feeStatusLabel(r.status)}
-                        </Badge>
-                        {r.paidOn ? (
-                          <span className="text-xs text-muted-foreground">
-                            paid {relativeTime(r.paidOn)}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            last update {relativeTime(r.updatedAt)}
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  ))
+            <CardContent className="px-4 md:px-5">
+              <StaffStudentFeesList
+                records={feeSeed.filter(
+                  (r) => r.studentUserId === studentId,
                 )}
-              </ul>
+                currentStatus={student.feeStatus}
+              />
             </CardContent>
           </Card>
         </TabsContent>

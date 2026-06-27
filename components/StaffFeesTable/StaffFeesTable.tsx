@@ -28,8 +28,8 @@ import type {
   AdminStudent,
   AdminUser,
   FeeRecord,
-  FeeStatus,
 } from "@/lib/staff/staff-data";
+import type { FeeStatus } from "@/lib/admin/admin-data";
 import { FEE_STATUSES, feeStatusLabel } from "@/lib/admin/admin-data";
 import { usePaginator } from "@/lib/hooks/usePagination";
 import { TablePagination } from "@/components/TablePagination/TablePagination";

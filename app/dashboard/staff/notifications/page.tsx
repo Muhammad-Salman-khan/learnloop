@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Megaphone, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,13 +11,8 @@ import {
 } from "@/components/ui/card";
 import { AdminStatStrip } from "@/components/AdminStatStrip/AdminStatStrip";
 
-import {
-  audienceLabel,
-  findUser,
-  severityLabel,
-  staffAlerts,
-} from "@/lib/staff/staff-data";
-import { relativeTime } from "@/lib/admin/formatters";
+import { StaffNotificationsList } from "@/components/StaffNotificationsList/StaffNotificationsList";
+import { staffAlerts } from "@/lib/staff/staff-data";
 
 const page = () => {
   const urgent = staffAlerts.filter((a) => a.severity === "urgent").length;
@@ -72,11 +66,11 @@ const page = () => {
           },
           {
             label: "Audience mix",
-            value: new Set(staffAlerts.map((a) =>
-              typeof a.audience === "string"
-                ? a.audience
-                : "batch",
-            )).size.toString(),
+            value: new Set(
+              staffAlerts.map((a) =>
+                typeof a.audience === "string" ? a.audience : "batch",
+              ),
+            ).size.toString(),
             hint: "Distinct recipient groups",
           },
         ]}
@@ -88,68 +82,12 @@ const page = () => {
             All alerts
           </CardTitle>
           <CardDescription className="text-xs">
-            Newest first. Toggle the read state from each card once read status
-            is wired to the API.
+            Newest first · paginated 10 per page · mobile cards on small
+            screens.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y">
-            {sorted.length === 0 ? (
-              <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                No alerts dispatched yet.
-              </li>
-            ) : (
-              sorted.map((alert) => {
-                const author = findUser(alert.authorUserId);
-                return (
-                  <li
-                    key={alert.id}
-                    className="flex flex-col gap-2 px-6 py-4"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span
-                        aria-hidden="true"
-                        className={
-                          alert.severity === "urgent"
-                            ? "mt-1 flex size-7 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-destructive"
-                            : "mt-1 flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground"
-                        }
-                      >
-                        <Megaphone className="size-3.5" />
-                      </span>
-                      <div className="flex flex-1 flex-col gap-1">
-                        <div className="flex flex-wrap items-baseline gap-2">
-                          <h3 className="text-sm font-medium leading-tight">
-                            {alert.title}
-                          </h3>
-                          <Badge
-                            variant={
-                              alert.severity === "urgent"
-                                ? "destructive"
-                                : "outline"
-                            }
-                          >
-                            {severityLabel(alert.severity)}
-                          </Badge>
-                          <Badge variant="secondary">
-                            {audienceLabel(alert.audience)}
-                          </Badge>
-                        </div>
-                        <p className="text-sm leading-snug text-muted-foreground">
-                          {alert.message}
-                        </p>
-                        <div className="flex items-center gap-3 text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                          <span>{author?.name ?? "System"}</span>
-                          <span>·</span>
-                          <span>{relativeTime(alert.publishedAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })
-            )}
-          </ul>
+        <CardContent>
+          <StaffNotificationsList items={sorted} />
         </CardContent>
       </Card>
     </div>

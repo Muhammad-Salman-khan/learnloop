@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { StaffCourseRosterTable } from "@/components/StaffCourseRosterTable/StaffCourseRosterTable";
 import {
   adminEnrollments,
   findCourse,
@@ -20,9 +21,7 @@ import {
   findUser,
   scheduleEntries,
 } from "@/lib/staff/staff-data";
-import {
-  courseStatusLabel,
-} from "@/lib/admin/admin-data";
+import { courseStatusLabel } from "@/lib/admin/admin-data";
 import {
   formatCurrencyPKR,
   formatDateLong,
@@ -92,11 +91,9 @@ const page = async ({ params }: { params: Params }) => {
               {course.subtitle}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link
-                href={`/dashboard/staff/courses/${courseId}/students`}
-              >
+              <Link href={`/dashboard/staff/courses/${courseId}/students`}>
                 <Users className="mr-1.5 size-3.5" />
                 Roster
               </Link>
@@ -219,48 +216,26 @@ const page = async ({ params }: { params: Params }) => {
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <span className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                Roster
+                Capacity
               </span>
               <CardTitle className="font-display text-lg font-medium">
-                {studentRows.length} students enrolled
+                {studentRows.length} / {course.capacity} enrolled
               </CardTitle>
               <CardDescription className="text-xs">
-                Sorted by enrollment date.
+                Open the full roster for paginated, searchable student list.
               </CardDescription>
             </div>
             <Button variant="ghost" size="sm" asChild>
               <Link href={`/dashboard/staff/courses/${courseId}/students`}>
-                View full roster →
+                Open roster →
               </Link>
             </Button>
           </CardHeader>
-          <CardContent className="p-0">
-            <ul className="divide-y">
-              {studentRows.slice(0, 4).map((row) => (
-                <li
-                  key={row.enrollment.id}
-                  className="flex items-center justify-between gap-3 px-6 py-3 text-sm"
-                >
-                  <Link
-                    href={`/dashboard/staff/students/${row.user.id}`}
-                    className="flex flex-col gap-0.5 hover:underline"
-                  >
-                    <span className="font-medium">{row.user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {row.student.rollNumber} · Sec {row.student.section}
-                    </span>
-                  </Link>
-                  <Badge variant="secondary" className="font-mono">
-                    {row.enrollment.progressPct}%
-                  </Badge>
-                </li>
-              ))}
-              {studentRows.length === 0 ? (
-                <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                  No students enrolled yet.
-                </li>
-              ) : null}
-            </ul>
+          <CardContent className="flex flex-col gap-3 text-xs text-muted-foreground">
+            <span>
+              The roster table offers desktop table + mobile card list with
+              search and pagination.
+            </span>
           </CardContent>
         </Card>
       </div>
@@ -275,7 +250,8 @@ const page = async ({ params }: { params: Params }) => {
               Slots owned by this course
             </CardTitle>
             <CardDescription className="text-xs">
-              {slots.length} slots this term.
+              {slots.length} slot{slots.length === 1 ? "" : "s"} this term —
+              open the timetable for the full paginated view.
             </CardDescription>
           </div>
           <Button variant="ghost" size="sm" asChild>
@@ -284,35 +260,19 @@ const page = async ({ params }: { params: Params }) => {
             </Link>
           </Button>
         </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y">
-            {slots.length === 0 ? (
-              <li className="px-6 py-8 text-center text-xs text-muted-foreground">
-                No teaching slots scheduled.
-              </li>
-            ) : (
-              slots.slice(0, 5).map((slot) => (
-                <li
-                  key={slot.id}
-                  className="flex items-center justify-between gap-3 px-6 py-3 text-sm"
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                      {slot.day.toUpperCase()} · {slot.startTime}–
-                      {slot.endTime}
-                    </span>
-                    <span className="font-medium">Room {slot.room}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {slot.notes ?? "—"}
-                    </span>
-                  </div>
-                  <Badge variant="outline" className="font-mono">
-                    {slot.recurrence}
-                  </Badge>
-                </li>
-              ))
-            )}
-          </ul>
+        <CardContent>
+          <StaffCourseRosterTable rows={studentRows.slice(0, 4)} />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Showing up to 4 roster preview rows here. The full roster — with
+            search, fee filter, and pagination — lives on{" "}
+            <Link
+              href={`/dashboard/staff/courses/${courseId}/students`}
+              className="underline"
+            >
+              the roster page
+            </Link>
+            .
+          </p>
         </CardContent>
       </Card>
     </div>

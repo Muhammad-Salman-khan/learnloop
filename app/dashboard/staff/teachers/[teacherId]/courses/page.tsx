@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { StaffCoursesTable } from "@/components/StaffCoursesTable/StaffCoursesTable";
 import {
   findCourse,
   findTeacher,
@@ -30,7 +30,7 @@ const page = async ({ params }: { params: Params }) => {
 
   const courses = teacher.assignedCourseIds
     .map((id) => findCourse(id))
-    .filter((c) => c !== null);
+    .filter((c): c is NonNullable<typeof c> => c !== null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,63 +61,16 @@ const page = async ({ params }: { params: Params }) => {
             Course catalogue
           </CardTitle>
           <CardDescription className="text-xs">
-            {courses.length} courses · capacity totals across the term.
+            {courses.length} courses · paging 10 per page.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          {courses.length === 0 ? (
-            <p className="px-6 py-8 text-center text-xs text-muted-foreground">
-              No course assignments yet.
-            </p>
-          ) : (
-            <ul className="divide-y">
-              {courses.map((course) => {
-                if (!course) return null;
-                return (
-                  <li
-                    key={course.id}
-                    className="flex items-center justify-between gap-3 px-6 py-3"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                        {course.code}
-                      </span>
-                      <Link
-                        href={`/dashboard/staff/courses/${course.id}`}
-                        className="text-sm font-medium hover:underline"
-                      >
-                        {course.title}
-                      </Link>
-                      <span className="text-xs text-muted-foreground">
-                        {course.enrolled}/{course.capacity} enrolled ·{" "}
-                        {course.subtitle}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant={
-                          course.status === "live"
-                            ? "secondary"
-                            : course.status === "draft"
-                              ? "outline"
-                              : "ghost"
-                        }
-                      >
-                        {course.status}
-                      </Badge>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link
-                          href={`/dashboard/staff/courses/${course.id}/students`}
-                        >
-                          Roster
-                        </Link>
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+        <CardContent>
+          <StaffCoursesTable
+            rows={courses.map((course) => ({
+              course,
+              teacher: user,
+            }))}
+          />
         </CardContent>
       </Card>
     </div>

@@ -18,19 +18,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-
+import { StaffCoursesTable } from "@/components/StaffCoursesTable/StaffCoursesTable";
+import { StaffCourseScheduleTable } from "@/components/StaffCourseScheduleTable/StaffCourseScheduleTable";
 import {
   findCourse,
   findTeacher,
   findUser,
   scheduleEntries,
-  weekdayShortLabel,
 } from "@/lib/staff/staff-data";
 import {
-  courseStatusLabel,
-} from "@/lib/admin/admin-data";
-import {
-  formatCurrencyPKR,
   formatDateLong,
   initials,
 } from "@/lib/admin/formatters";
@@ -194,48 +190,15 @@ const page = async ({ params }: { params: Params }) => {
                 Every course currently taught by {user.name}.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              {courses.length === 0 ? (
-                <p className="px-6 py-8 text-center text-xs text-muted-foreground">
-                  No active courses.
-                </p>
-              ) : (
-                <ul className="divide-y">
-                  {courses.map((course) => {
-                    if (!course) return null;
-                    const students = course.enrolled;
-                    return (
-                      <li
-                        key={course.id}
-                        className="flex items-center justify-between gap-3 px-6 py-3"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                            {course.code} · {courseStatusLabel(course.status)}
-                          </span>
-                          <Link
-                            href={`/dashboard/staff/courses/${course.id}`}
-                            className="text-sm font-medium hover:underline"
-                          >
-                            {course.title}
-                          </Link>
-                          <span className="text-xs text-muted-foreground">
-                            {students}/{course.capacity} enrolled ·{" "}
-                            {formatCurrencyPKR(course.feePerSeat)} per seat
-                          </span>
-                        </div>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link
-                            href={`/dashboard/staff/courses/${course.id}`}
-                          >
-                            Open
-                          </Link>
-                        </Button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+            <CardContent>
+              <StaffCoursesTable
+                rows={courses
+                  .filter((c): c is NonNullable<typeof c> => c !== null)
+                  .map((course) => ({
+                    course,
+                    teacher: user,
+                  }))}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -250,40 +213,8 @@ const page = async ({ params }: { params: Params }) => {
                 Every slot owned by {user.name}, sorted across the week.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              {upcomingSlots.length === 0 ? (
-                <p className="px-6 py-8 text-center text-xs text-muted-foreground">
-                  Not currently teaching a regular slot.
-                </p>
-              ) : (
-                <ul className="divide-y">
-                  {upcomingSlots.map((slot) => {
-                    if (!slot.course) return null;
-                    return (
-                      <li
-                        key={slot.id}
-                        className="flex items-center justify-between gap-3 px-6 py-3"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-                            {weekdayShortLabel(slot.day)} · {slot.startTime}–
-                            {slot.endTime}
-                          </span>
-                          <span className="text-sm font-medium">
-                            {slot.course.title}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            Room {slot.room} · {slot.notes ?? "No notes"}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="font-mono">
-                          {slot.recurrence}
-                        </Badge>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+            <CardContent>
+              <StaffCourseScheduleTable slots={upcomingSlots} />
             </CardContent>
           </Card>
         </TabsContent>

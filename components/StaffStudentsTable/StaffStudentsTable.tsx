@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Edit3, Plus, Search, View } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,12 @@ import {
 import type { AdminStudent, AdminUser } from "@/lib/staff/staff-data";
 import type { FeeStatus } from "@/lib/admin/admin-data";
 import { FEE_STATUSES, feeStatusLabel } from "@/lib/admin/admin-data";
+import { usePaginator } from "@/lib/hooks/usePagination";
+import { TablePagination } from "@/components/TablePagination/TablePagination";
+import {
+  MobileCard,
+  MobileCardList,
+} from "@/components/MobileCard/MobileCard";
 import { feeRecords as feeSeed } from "@/lib/staff/staff-data";
 import {
   formatCurrencyPKR,
@@ -50,6 +56,17 @@ function feeVariant(
   if (status === "paid") return "secondary";
   if (status === "due") return "outline";
   return "destructive";
+}
+
+function latestFeeFor(userId: string): { label: string; amount: number } | null {
+  const latest = [...feeSeed]
+    .filter((r) => r.studentUserId === userId)
+    .sort((a, b) => (a.monthLabel < b.monthLabel ? 1 : -1))[0];
+  if (!latest) return null;
+  return {
+    label: formatMonthYear(latest.monthLabel),
+    amount: latest.amount,
+  };
 }
 
 export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
@@ -76,6 +93,17 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
       );
     });
   }, [rows, query, cohort, feeFilter]);
+
+  const paginator = usePaginator(filtered.length, 10);
+
+  // When filters shrink the result set we want the visible page to reset
+  // back to 1 — otherwise a stuck page-3-with-zero-rows UX is jarring.
+  useEffect(() => {
+    paginator.goTo(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, cohort, feeFilter, filtered.length]);
+
+  const pageRows = paginator.slice(filtered);
 
   return (
     <div className="flex flex-col gap-4">
@@ -130,7 +158,8 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md border bg-card">
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-md border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -143,18 +172,21 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {pageRows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
                   className="px-5 py-10 text-center text-xs text-muted-foreground"
                 >
-                  No students match these filters.
+                  {filtered.length === 0
+                    ? "No students match these filters."
+                    : "Nothing on this page."}
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map(({ student, user }) => {
+              pageRows.map(({ student, user }) => {
                 const avg = averageForStudent(student.userId);
+                const latest = latestFeeFor(student.userId);
                 return (
                   <TableRow key={student.userId}>
                     <TableCell className="pl-5">
@@ -197,17 +229,11 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
                       <Badge variant={feeVariant(student.feeStatus)}>
                         {feeStatusLabel(student.feeStatus)}
                       </Badge>
-                      <div className="mt-0.5 text-[10.5px] text-muted-foreground">
-                        {(() => {
-                          const latest = [...feeSeed]
-                            .filter((r) => r.studentUserId === student.userId)
-                            .sort((a, b) =>
-                              a.monthLabel < b.monthLabel ? 1 : -1,
-                            )[0];
-                          if (!latest) return "—";
-                          return `${formatMonthYear(latest.monthLabel)} · ${formatCurrencyPKR(latest.amount)}`;
-                        })()}
-                      </div>
+                      {latest ? (
+                        <div className="mt-0.5 text-[10.5px] text-muted-foreground">
+                          {latest.label} · {formatCurrencyPKR(latest.amount)}
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell className="pr-5 text-right">
                       <div className="inline-flex items-center gap-1">
@@ -215,14 +241,14 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
                           <Link
                             href={`/dashboard/staff/students/${student.userId}`}
                           >
-                            View
+                            <View className="mr-1 size-3" /> View
                           </Link>
                         </Button>
                         <Button variant="ghost" size="sm" asChild>
                           <Link
                             href={`/dashboard/staff/students/${student.userId}/edit`}
                           >
-                            Edit
+                            <Edit3 className="mr-1 size-3" /> Edit
                           </Link>
                         </Button>
                       </div>
@@ -234,6 +260,67 @@ export function StaffStudentsTable({ rows }: StaffStudentsTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Mobile cards */}
+      <MobileCardList>
+        {pageRows.length === 0 ? (
+          <div className="rounded-md border bg-card p-6 text-center text-xs text-muted-foreground">
+            {filtered.length === 0
+              ? "No students match these filters."
+              : "Nothing on this page."}
+          </div>
+        ) : (
+          pageRows.map(({ student, user }) => {
+            const avg = averageForStudent(student.userId);
+            const latest = latestFeeFor(student.userId);
+            return (
+              <MobileCard
+                key={student.userId}
+                emphasis={
+                  <>
+                    <Badge variant={feeVariant(student.feeStatus)}>
+                      {feeStatusLabel(student.feeStatus)}
+                    </Badge>
+                    <Badge variant="secondary" className="font-mono">
+                      Avg {avg}%
+                    </Badge>
+                  </>
+                }
+                fields={[
+                  { label: "Name", value: user.name },
+                  { label: "Email", value: user.email },
+                  { label: "Roll #", value: student.rollNumber },
+                  {
+                    label: "Cohort",
+                    value: `${student.className} · Sec ${student.section}`,
+                  },
+                ]}
+                footer={
+                  latest
+                    ? `Latest cycle: ${latest.label} · ${formatCurrencyPKR(latest.amount)}`
+                    : undefined
+                }
+                actions={
+                  <>
+                    <Button variant="outline" size="sm" asChild className="gap-1">
+                      <Link href={`/dashboard/staff/students/${student.userId}`}>
+                        <View className="size-3" /> View
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild className="gap-1">
+                      <Link href={`/dashboard/staff/students/${student.userId}/edit`}>
+                        <Edit3 className="size-3" /> Edit
+                      </Link>
+                    </Button>
+                  </>
+                }
+              />
+            );
+          })
+        )}
+      </MobileCardList>
+
+      <TablePagination paginator={paginator} />
     </div>
   );
 }

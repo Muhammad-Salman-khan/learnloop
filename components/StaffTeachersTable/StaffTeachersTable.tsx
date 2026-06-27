@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Edit3, Plus, Search, View } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +24,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type {
-  AdminTeacher,
-  AdminUser,
-} from "@/lib/staff/staff-data";
-import { formatDateLong, initials } from "@/lib/admin/formatters";
+import type { AdminTeacher, AdminUser } from "@/lib/staff/staff-data";
+import { usePaginator } from "@/lib/hooks/usePagination";
+import { TablePagination } from "@/components/TablePagination/TablePagination";
+import {
+  MobileCard,
+  MobileCardList,
+} from "@/components/MobileCard/MobileCard";
+import {
+  formatDateLong,
+  initials,
+} from "@/lib/admin/formatters";
 
 type StatusFilter = "all" | "active" | "inactive";
 
@@ -61,6 +67,15 @@ export function StaffTeachersTable({ rows }: StaffTeachersTableProps) {
       );
     });
   }, [rows, query, status]);
+
+  const paginator = usePaginator(filtered.length, 10);
+
+  useEffect(() => {
+    paginator.goTo(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, status, filtered.length]);
+
+  const pageRows = paginator.slice(filtered);
 
   return (
     <div className="flex flex-col gap-4">
@@ -99,7 +114,8 @@ export function StaffTeachersTable({ rows }: StaffTeachersTableProps) {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md border bg-card">
+      {/* Desktop table */}
+      <div className="hidden overflow-hidden rounded-md border bg-card md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -115,17 +131,19 @@ export function StaffTeachersTable({ rows }: StaffTeachersTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {pageRows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={7}
                   className="px-5 py-10 text-center text-xs text-muted-foreground"
                 >
-                  No teachers match these filters.
+                  {filtered.length === 0
+                    ? "No teachers match these filters."
+                    : "Nothing on this page."}
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map(({ teacher, user }) => (
+              pageRows.map(({ teacher, user }) => (
                 <TableRow key={teacher.userId}>
                   <TableCell className="pl-5">
                     <Link
@@ -174,14 +192,14 @@ export function StaffTeachersTable({ rows }: StaffTeachersTableProps) {
                         <Link
                           href={`/dashboard/staff/teachers/${teacher.userId}`}
                         >
-                          View
+                          <View className="mr-1 size-3" /> View
                         </Link>
                       </Button>
                       <Button variant="ghost" size="sm" asChild>
                         <Link
                           href={`/dashboard/staff/teachers/${teacher.userId}/edit`}
                         >
-                          Edit
+                          <Edit3 className="mr-1 size-3" /> Edit
                         </Link>
                       </Button>
                     </div>
@@ -192,6 +210,65 @@ export function StaffTeachersTable({ rows }: StaffTeachersTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Mobile cards */}
+      <MobileCardList>
+        {pageRows.length === 0 ? (
+          <div className="rounded-md border bg-card p-6 text-center text-xs text-muted-foreground">
+            {filtered.length === 0
+              ? "No teachers match these filters."
+              : "Nothing on this page."}
+          </div>
+        ) : (
+          pageRows.map(({ teacher, user }) => (
+            <MobileCard
+              key={teacher.userId}
+              emphasis={
+                <>
+                  <Badge variant={teacher.isActive ? "secondary" : "outline"}>
+                    {teacher.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                  <Badge variant="secondary" className="font-mono">
+                    {teacher.assignedCourseIds.length} courses
+                  </Badge>
+                </>
+              }
+              fields={[
+                { label: "Name", value: user.name },
+                { label: "Email", value: user.email },
+                {
+                  label: "Subject",
+                  value: teacher.subjectProficiency.join(", "),
+                },
+                {
+                  label: "Employment ID",
+                  value: teacher.employmentId,
+                },
+                {
+                  label: "Hired",
+                  value: formatDateLong(teacher.hireDate),
+                },
+              ]}
+              actions={
+                <>
+                  <Button variant="outline" size="sm" asChild className="gap-1">
+                    <Link href={`/dashboard/staff/teachers/${teacher.userId}`}>
+                      <View className="size-3" /> View
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="gap-1">
+                    <Link href={`/dashboard/staff/teachers/${teacher.userId}/edit`}>
+                      <Edit3 className="size-3" /> Edit
+                    </Link>
+                  </Button>
+                </>
+              }
+            />
+          ))
+        )}
+      </MobileCardList>
+
+      <TablePagination paginator={paginator} />
     </div>
   );
 }
